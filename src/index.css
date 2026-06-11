@@ -1,0 +1,404 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark light;
+}
+
+/* Base definitions for Dark Mode (Defaults) */
+:root, html, html.dark {
+  --color-cyber-bg: #000000;
+  --color-cyber-card: #000000;
+  --color-cyber-card-light: #000000;
+  --color-cyber-border: rgba(60, 60, 100, 0.25);
+  --color-cyber-neon: #00ff88;     /* Neon Green */
+  --color-cyber-purple: #7c3aed;   /* Electric purple */
+  --color-cyber-cyan: #00e5ff;     /* Laser Cyan */
+  --color-cyber-text: #e2e8f0;     /* slate-200 */
+  --color-cyber-text-muted: #94a3b8; /* slate-400 */
+  
+  --color-cyber-pure-bg: #000000;
+  --color-cyber-pure-card: #000000;
+  --color-cyber-pure-header: #000000;
+  --color-cyber-pure-modal: #000000;
+  --color-cyber-pure-inner: #000000;
+  
+  --matrix-opacity: 0.2;
+  --glass-blur: blur(12px) saturate(180%);
+  --cyber-shadow-subtle: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+  --accent-gradient: linear-gradient(135deg, #00e5ff 0%, #7c3aed 100%);
+}
+
+/* Adaptive Light Mode Configuration */
+html.light {
+  --color-cyber-bg: #ffffff;
+  --color-cyber-card: rgba(255, 255, 255, 0.82);
+  --color-cyber-card-light: rgba(241, 245, 249, 0.85);
+  --color-cyber-border: rgba(148, 163, 184, 0.25);
+  --color-cyber-neon: #16a34a;     /* Premium Emerald Green */
+  --color-cyber-purple: #7c3aed;   /* Deep Electric Purple */
+  --color-cyber-cyan: #0284c7;     /* Tech Navy Cyan */
+  --color-cyber-text: #0f172a;     /* Deep Slate 900 */
+  --color-cyber-text-muted: #475569; /* Slate 600 */
+  
+  --color-cyber-pure-bg: #ffffff;
+  --color-cyber-pure-card: #ffffff;
+  --color-cyber-pure-header: rgba(255, 255, 255, 0.88);
+  --color-cyber-pure-modal: #ffffff;
+  --color-cyber-pure-inner: #f1f5f9;
+  
+  --matrix-opacity: 0.08;
+  --glass-blur: blur(16px) saturate(140%);
+  --cyber-shadow-subtle: 0 8px 32px 0 rgba(15, 23, 42, 0.05);
+  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%);
+}
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Theme variables automatically mapped to CSS custom variables */
+  --color-cyber-bg: var(--color-cyber-bg);
+  --color-cyber-card: var(--color-cyber-card);
+  --color-cyber-card-light: var(--color-cyber-card-light);
+  --color-cyber-border: var(--color-cyber-border);
+  --color-cyber-neon: var(--color-cyber-neon);
+  --color-cyber-purple: var(--color-cyber-purple);
+  --color-cyber-cyan: var(--color-cyber-cyan);
+  --color-cyber-text: var(--color-cyber-text);
+  --color-cyber-text-muted: var(--color-cyber-text-muted);
+}
+
+body {
+  background-color: var(--color-cyber-bg);
+  color: var(--color-cyber-text);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Premium Cinematic System Transitions for a raycast-like feel */
+html, html * {
+  transition: background-color 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              fill 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              stroke 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              opacity 650ms cubic-bezier(0.16, 1, 0.3, 1),
+              backdrop-filter 650ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Glassmorphism Classes dynamically adapting to themes */
+.cyber-glass, .cyber-card {
+  background: var(--color-cyber-card) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--color-cyber-border) !important;
+  box-shadow: var(--cyber-shadow-subtle) !important;
+}
+
+.cyber-glass-light, .cyber-card-light {
+  background: var(--color-cyber-card-light) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  border: 1px solid var(--color-cyber-border) !important;
+}
+
+/* Cyberpunk Holographic and Metallic glow borders adjusted for light mode contrast */
+.cyber-glow-green {
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.15);
+  border: 1px solid var(--color-cyber-neon);
+}
+html.light .cyber-glow-green {
+  box-shadow: 0 4px 20px rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.4);
+}
+
+.cyber-glow-purple {
+  box-shadow: 0 0 15px rgba(124, 58, 237, 0.15);
+  border: 1px solid var(--color-cyber-purple);
+}
+html.light .cyber-glow-purple {
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.08);
+  border: 1px solid rgba(124, 58, 237, 0.4);
+}
+
+.cyber-glow-cyan {
+  box-shadow: 0 0 15px rgba(0, 229, 255, 0.15);
+  border: 1px solid var(--color-cyber-cyan);
+}
+html.light .cyber-glow-cyan {
+  box-shadow: 0 4px 20px rgba(2, 132, 199, 0.08);
+  border: 1px solid rgba(2, 132, 199, 0.4);
+}
+
+/* Custom fade-in for smooth navigation transitions */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Scanning Pulse grid */
+@keyframes scanning {
+  0% { transform: translateY(-100%); }
+  50% { transform: translateY(100%); }
+  100% { transform: translateY(-100%); }
+}
+
+.scanning-bar {
+  animation: scanning 3s linear infinite;
+  background: linear-gradient(to bottom, transparent, var(--color-cyber-neon), transparent);
+  opacity: 0.3;
+}
+
+/* Pulsing neon utility for active risk status badges */
+@keyframes glow-pulse-safe {
+  0%, 100% { box-shadow: 0 0 4px rgba(22, 163, 74, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(22, 163, 74, 0.8); }
+}
+@keyframes glow-pulse-caution {
+  0%, 100% { box-shadow: 0 0 4px rgba(245, 158, 11, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(245, 158, 11, 0.8); }
+}
+@keyframes glow-pulse-danger {
+  0%, 100% { box-shadow: 0 0 4px rgba(239, 68, 68, 0.4); }
+  50% { box-shadow: 0 0 12px rgba(239, 68, 68, 0.8); }
+}
+
+.animate-pulse-safe {
+  animation: glow-pulse-safe 2s infinite;
+}
+.animate-pulse-caution {
+  animation: glow-pulse-caution 2s infinite;
+}
+.animate-pulse-danger {
+  animation: glow-pulse-danger 2s infinite;
+}
+
+/* Elegant scrollbar styling to match the cyberpunk look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-cyber-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-cyber-neon);
+}
+
+/* Code Syntax Styling overrides */
+pre, code {
+  font-family: var(--font-mono) !important;
+}
+
+/* Scrollbar None Utilities */
+.scrollbar-none {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+
+/* ==========================================================================
+   ADAPTIVE OVERRIDES SYSTEM FOR FULL BLENDING WITHOUT HARDCODED BREAKAGES
+   ========================================================================== */
+
+/* Background Overrides under Light Mode */
+html.light .bg-\[\#070710\],
+html.light .bg-\[\#0a0a1a\],
+html.light .bg-\[\#020205\],
+html.light .bg-slate-950,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-950\/80,
+html.light .bg-black {
+  background-color: var(--color-cyber-pure-bg) !important;
+}
+
+html.light .bg-\[\#0d0d22\],
+html.light .bg-\[\#0d0d1e\],
+html.light .bg-\[\#0c0c1e\],
+html.light .bg-\[\#0e0e24\],
+html.light .bg-\[\#090915\],
+html.light .bg-\[\#070719\],
+html.light .bg-\[\#050512\],
+html.light .bg-\[\#050514\]\/40,
+html.light .bg-\[\#03030c\],
+html.light .bg-\[\#0b0b1a\],
+html.light .bg-\[\#020207\]\/90,
+html.light .bg-\[\#020207\]\/92,
+html.light .bg-\[\#020207\],
+html.light .bg-cyber-card,
+html.light .bg-\[\#101030\]\/50,
+html.light .bg-\[\#0b0c22\],
+html.light .bg-\[\#0b0c22\]\/95,
+html.light .bg-\[\#0e0e29\],
+html.light .bg-\[\#090a21\],
+html.light .bg-\[\#030310\]\/50 {
+  background-color: var(--color-cyber-pure-card) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+}
+
+html.light .bg-\[\#030308\],
+html.light .bg-\[\#030308\]\/80,
+html.light .bg-\[\#04040a\],
+html.light .bg-\[\#040409\],
+html.light .bg-\[\#0b0b1f\],
+html.light .bg-\[\#0e0e24\],
+html.light .bg-\[\#040410\],
+html.light .bg-\[\#04040b\] {
+  background-color: var(--color-cyber-pure-header) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+}
+
+html.light .bg-\[\#1b1c31\],
+html.light .bg-cyber-card-light,
+html.light .bg-\[\#161630\],
+html.light .bg-\[\#16172f\]\/40,
+html.light .bg-\[\#1a1b38\],
+html.light .bg-\[\#141535\],
+html.light .bg-\[\#161730\],
+html.light .bg-\[\#1b1c3b\],
+html.light .bg-\[\#060613\],
+html.light .bg-\[\#060611\],
+html.light .bg-\[\#08081a\],
+html.light .bg-\[\#101026\],
+html.light .bg-\[\#25274ade\],
+html.light .bg-\[\#123e33\],
+html.light .bg-\[\#0d2a23\],
+html.light .bg-\[\#1b1c31\],
+html.light .bg-\[\#1f1f45\],
+html.light .bg-\[\#060616\],
+html.light .bg-\[\#010105\],
+html.light .bg-\[\#10102b\] {
+  background-color: var(--color-cyber-card-light) !important;
+}
+
+/* Interactive elements, code snippets & fallback states */
+html.light .bg-\[\#030308\] {
+  background-color: var(--color-cyber-pure-inner) !important;
+}
+html.light .bg-\[\#060611\] {
+  background-color: var(--color-cyber-pure-inner) !important;
+}
+html.light .bg-slate-900\/60 {
+  background-color: var(--color-cyber-card) !important;
+}
+
+/* Overriding specific buy/sell/mint/pause indicators in Light Mode to keep styling pristine */
+html.light .bg-\[\#0d2a23\]\/80 {
+  background-color: rgba(22, 163, 74, 0.12) !important;
+  color: #15803d !important;
+}
+html.light .bg-\[\#0c1e19\], 
+html.light .bg-\[\#123e33\] {
+  background-color: rgba(22, 163, 74, 0.15) !important;
+}
+
+html.light .bg-\[\#2d0f1b\] {
+  background-color: rgba(220, 38, 38, 0.12) !important;
+  color: #dc2626 !important;
+}
+
+/* Chat Input field overrides */
+html.light input,
+html.light select,
+html.light textarea,
+html.light .bg-\[\#020205\] {
+  background-color: #ffffff !important;
+  color: var(--color-cyber-text) !important;
+  border-color: var(--color-cyber-border) !important;
+}
+
+/* Placeholder support for input */
+html.light input::placeholder, 
+html.light textarea::placeholder {
+  color: var(--color-cyber-text-muted) !important;
+  opacity: 0.75;
+}
+
+/* Direct Text Color mapping in Light Mode for outstanding balance and legibility */
+html.light .text-\[\#e2e8f0\],
+html.light .text-\[\#ffffff\],
+html.light .text-white,
+html.light .text-slate-100,
+html.light .text-slate-200,
+html.light .text-slate-300,
+html.light .text-zinc-350,
+html.light .text-\[\#ffffff\],
+html.light .text-zinc-100 {
+  color: var(--color-cyber-text) !important;
+}
+
+html.light .text-slate-400,
+html.light .text-slate-500,
+html.light .text-zinc-400,
+html.light .text-zinc-500,
+html.light .text-slate-755,
+html.light .text-slate-600 {
+  color: var(--color-cyber-text-muted) !important;
+}
+
+/* Border overrides */
+html.light .border-cyber-border,
+html.light .border-cyber-border\/40,
+html.light .border-cyber-border\/60,
+html.light .border-cyber-border\/80,
+html.light .border-cyber-cyan\/15,
+html.light .border-cyber-cyan\/30,
+html.light .border-cyber-cyan\/35,
+html.light .border-cyber-purple\/20,
+html.light .border-\[\#ff4b82\]\/40,
+html.light .border-cyber-border\/20,
+html.light .border-\[rgba\(30\,30\,63\,0\.5\)\] {
+  border-color: var(--color-cyber-border) !important;
+}
+
+/* Glowing system visual blocks on light mode */
+html.light .cyber-glow-green,
+html.light .cyber-glow-purple,
+html.light .cyber-glow-cyan {
+  box-shadow: var(--cyber-shadow-subtle) !important;
+  border-color: var(--color-cyber-border) !important;
+}
+
+/* Chart text labels in lights mode */
+html.light svg text {
+  fill: var(--color-cyber-text-muted) !important;
+}
+html.light svg line {
+  stroke: var(--color-cyber-border) !important;
+}
+
+/* Linear Gradient Background Matrix Grid in Light Mode */
+html.light .bg-\[linear-gradient\(to_right\,\#1e1e3f_1px\,transparent_1px\)\,linear-gradient\(to_bottom\,\#1e1e3f_1px\,transparent_1px\)\] {
+  background-image: none !important;
+  display: none !important;
+  opacity: 0 !important;
+}
+
+/* Floating themes switcher custom styles for absolute beauty */
+.theme-flicker-transition {
+  animation: flicker 0.15s ease-out;
+}
+@keyframes flicker {
+  0% { opacity: 0.8; }
+  50% { opacity: 0.95; }
+  100% { opacity: 1; }
+}

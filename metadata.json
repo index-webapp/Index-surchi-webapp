@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Remix: Remix: SURCHI AI — Crypto Intelligence Suite",
+  "description": "An interactive, production-grade intelligence suite for Solana and other crypto networks. Features real AI-generated auditing, rug pull detection, code generation, and market sentiment scanning.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
