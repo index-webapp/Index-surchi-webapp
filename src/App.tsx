@@ -6231,7 +6231,7 @@ export default function App() {
                   {chatHistory.map((m) => {
                     const isAssistant = m.role === 'assistant';
                     return (
-                      <div key={m.id} className={`flex gap-3 max-w-[85%] ${isAssistant ? 'mr-auto text-left' : 'ml-auto flex-row-reverse text-right'}`}>
+                       <div key={m.id} className={`flex gap-3 max-w-[85%] ${isAssistant ? 'mr-auto text-left' : 'ml-auto flex-row-reverse text-right'}`}>
                         <div className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 text-xs font-mono select-none overflow-hidden ${
                           isAssistant ? '' : 'bg-cyber-cyan text-[#03030c] font-black'
                         }`}>

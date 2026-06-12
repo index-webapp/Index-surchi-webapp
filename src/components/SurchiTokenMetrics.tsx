@@ -210,11 +210,11 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
           
           {/* Real Surchi Logo & Identity info */}
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl overflow-hidden border border-purple-500/15 shadow-[0_2px_8px_rgba(139,92,246,0.15)] shrink-0 bg-black">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border border-purple-500/15 shadow-[0_2px_8px_rgba(139,92,246,0.15)] shrink-0 bg-black">
               <img
                 src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
                 alt="SURCHI Logo"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover rounded-full"
                 referrerPolicy="no-referrer"
               />
             </div>
