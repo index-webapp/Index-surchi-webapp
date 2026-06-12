@@ -47,7 +47,7 @@ const INITIAL_COINS: TickerItem[] = [
     id: 'surchi',
     name: 'SURCHI',
     symbol: 'SURCHI',
-    image: 'https://raw.githubusercontent.com/surchiecosystem/brand-assets/main/logo.png',
+    image: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg',
     current_price: 0.0215,
     price_change_percentage_24h: 3.42,
     isNative: true,
@@ -153,7 +153,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
           id: 'surchi',
           name: 'SURCHI',
           symbol: 'SURCHI',
-          image: 'https://raw.githubusercontent.com/surchiecosystem/brand-assets/main/logo.png',
+          image: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg',
           current_price: nativePrice,
           price_change_percentage_24h: nativeChange,
           isNative: true,
@@ -183,10 +183,10 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
     }`}>
       {/* 
         DEVELOPER ACCENT NOTE:
-        Speed is reduced further by 5%.
-        Our previous duration was 50s.
-        50 * 1.05 = 52.5s.
-        Using 53s to achieve precisely 5% slower scroll speed.
+        Speed is reduced further by 6%.
+        Our previous duration was 56s.
+        56 / 0.94 = 59.57s.
+        Using 59.5s to achieve precisely 6% slower marquee speed.
       */}
       <style>{`
         @keyframes tickerMarquee {
@@ -196,7 +196,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
         .animate-ticker {
           display: flex;
           width: max-content;
-          animation: tickerMarquee 56s linear infinite;
+          animation: tickerMarquee 59.5s linear infinite;
         }
       `}</style>
       
@@ -239,12 +239,12 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                 </span>
 
                 {/* Logo with safe image error handling */}
-                <div className="w-4.5 h-4.5 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border border-gray-200/20 relative">
+                <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border border-gray-200/20 relative">
                   <img 
                     src={item.image} 
                     alt={item.symbol} 
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-full"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       if (e.currentTarget.nextElementSibling) {
@@ -252,7 +252,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                       }
                     }}
                   />
-                  <div className="hidden absolute inset-0 flex items-center justify-center text-[7px] text-gray-500 font-black tracking-tight leading-none bg-purple-50">
+                  <div className="hidden absolute inset-0 flex items-center justify-center text-[7px] text-gray-500 font-black tracking-tight leading-none bg-purple-55">
                     {item.symbol.slice(0, 2)}
                   </div>
                 </div>

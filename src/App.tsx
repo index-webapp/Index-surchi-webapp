@@ -5674,8 +5674,10 @@ export default function App() {
 
                   {/* HIGHLY OPTIMIZED RESPONSIVE FULL-WIDTH LAYOUT */}
                   {isHomePage ? (
-                    <div className="flex flex-col w-full gap-6">
-                      <SurchiLiveTicker onSelectCoin={handleSelectTrendingToken} themeMode={themeMode} />
+                    <div className="flex flex-col w-full gap-5">
+                      <div className="-mt-3.5 sm:-mt-5">
+                        <SurchiLiveTicker onSelectCoin={handleSelectTrendingToken} themeMode={themeMode} />
+                      </div>
                       {/* Left Block: Search fields and Loading states */}
                       <div className="w-full space-y-4">
                         {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
