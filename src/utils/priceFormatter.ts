@@ -31,7 +31,7 @@ export function formatAbbreviatedPrice(price: number | string): string {
   if (isNaN(numPrice)) return 'N/A';
   if (numPrice === 0) return '0.00';
   if (numPrice >= 0.01) {
-    return numPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    return numPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
   }
 
   // Convert to clean decimal string without scientific notation
@@ -53,12 +53,20 @@ export function formatAbbreviatedPrice(price: number | string): string {
 
   // Only abbreviate if there are 4 or more zeros (e.g. 0.000045 -> 0.0⁴45)
   if (zeroCount < 4) {
-    if (numPrice < 0.0001) return numPrice.toFixed(6);
-    return numPrice.toFixed(5);
+    const formatted = numPrice.toFixed(Math.max(6, zeroCount + 4));
+    const trimmed = formatted.replace(/0+$/, '');
+    if (trimmed.endsWith('.')) {
+      return trimmed + '00';
+    }
+    const dotPos = trimmed.indexOf('.');
+    if (dotPos !== -1 && trimmed.length - dotPos === 2) {
+      return trimmed + '0';
+    }
+    return trimmed;
   }
 
   const remainingDigits = fractionPart.slice(zeroCount);
-  const sigDigits = remainingDigits.slice(0, 4);
+  const sigDigits = remainingDigits.slice(0, 6);
 
   const SUPERSCRIPTS: Record<string, string> = {
     '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴',

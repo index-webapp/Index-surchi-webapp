@@ -901,13 +901,13 @@ export default function UniversalTokenAnalyzer({
                         }}
                       />
                       {/* Candlestick elements (wick & body bars) */}
-                      <Bar dataKey="wick" barSize={1.5}>
+                      <Bar dataKey="wick" barSize={1.5} isAnimationActive={true} animationDuration={300} animationEasing="ease-out">
                         {chartData.map((entry, index) => {
                           const up = entry.close >= entry.open;
                           return <Cell key={`wick-${index}`} fill={up ? '#00ff88' : '#ff4b82'} opacity={0.65} />;
                         })}
                       </Bar>
-                      <Bar dataKey="body" barSize={8}>
+                      <Bar dataKey="body" barSize={8} isAnimationActive={true} animationDuration={300} animationEasing="ease-out">
                         {chartData.map((entry, index) => {
                           const up = entry.close >= entry.open;
                           return <Cell key={`body-${index}`} fill={up ? '#00ff88' : '#ff4b82'} />;
@@ -964,7 +964,7 @@ export default function UniversalTokenAnalyzer({
                           return null;
                         }}
                       />
-                      <Area type="monotone" dataKey="price" stroke="#00e5ff" strokeWidth={2.5} fillOpacity={1} fill="url(#glowPulse)" />
+                      <Area type="monotone" dataKey="price" stroke="#00e5ff" strokeWidth={2.5} fillOpacity={1} fill="url(#glowPulse)" isAnimationActive={true} animationDuration={300} animationEasing="ease-out" />
                     </AreaChart>
                   )}
                 </ResponsiveContainer>
