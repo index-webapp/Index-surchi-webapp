@@ -887,7 +887,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
                   </a>
 
                   <a 
-                    href="https://discord.gg/uH2Jp3yu5h" 
+                    href="https://discord.gg/YANGvFfvax" 
                     target="_blank" 
                     rel="noreferrer" 
                     title="Discord Invite"

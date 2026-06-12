@@ -398,7 +398,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
 
                 {/* Discord */}
                 <a 
-                  href="https://discord.gg/DtFYCzCUk" 
+                  href="https://discord.gg/YANGvFfvax" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="w-5 h-5 min-[360px]:w-5.5 min-[360px]:h-5.5 rounded-full bg-purple-500/10 hover:bg-[#8B5CF6] text-purple-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"

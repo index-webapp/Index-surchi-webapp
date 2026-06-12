@@ -644,7 +644,7 @@ export default function SurchiLivePortal({
 
           {/* Discord */}
           <a
-            href="https://discord.gg/DtFYCzCUk"
+            href="https://discord.gg/YANGvFfvax"
             target="_blank"
             rel="noopener noreferrer"
             className="w-10 h-10 rounded-full border border-purple-500/15 bg-purple-500/5 hover:bg-[#8B5CF6] hover:text-white text-purple-400 hover:border-transparent flex items-center justify-center transition-all duration-300 shadow-sm"
