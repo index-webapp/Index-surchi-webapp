@@ -194,6 +194,24 @@ export default function UniversalTokenAnalyzer({
 
   const { detectedChain, isSolana, isEVM } = getChainDetails(tokenAddress, blockchainName);
 
+  const getExplorerUrl = (address: string, chainId: string) => {
+    const c = (chainId || 'ethereum').toLowerCase();
+    const cleanAddr = encodeURIComponent(address.trim());
+    if (c.includes('solana') || c === 'sol') return `https://solscan.io/token/${cleanAddr}`;
+    if (c.includes('bsc') || c.includes('binance') || c.includes('bnb')) return `https://bscscan.com/token/${cleanAddr}`;
+    if (c.includes('base')) return `https://basescan.org/token/${cleanAddr}`;
+    if (c.includes('arbitrum') || c.includes('arb')) return `https://arbiscan.io/token/${cleanAddr}`;
+    if (c.includes('polygon') || c.includes('matic')) return `https://polygonscan.com/token/${cleanAddr}`;
+    if (c.includes('avalanche') || c.includes('avax')) return `https://snowtrace.io/token/${cleanAddr}`;
+    if (c.includes('sui')) return `https://suiscan.xyz/mainnet/coin/${cleanAddr}`;
+    if (c.includes('aptos')) return `https://aptoscan.com/coin/${cleanAddr}`;
+    if (c.includes('tron')) return `https://tronscan.org/#/token20/${cleanAddr}`;
+    if (c.includes('sonic')) return `https://sonicscan.org/token/${cleanAddr}`;
+    if (c.includes('hyperliquid') || c.includes('hl')) return `https://hyperscan.xyz/address/${cleanAddr}`;
+    if (c.includes('bitcoin') || c.includes('btc')) return `https://mempool.space/address/${cleanAddr}`;
+    return `https://etherscan.io/token/${cleanAddr}`;
+  };
+
   // Deterministic Mock Data Generator driven by Contract Address seeding
   const getSeededMetrics = () => {
     let seed = 0;
@@ -577,7 +595,7 @@ export default function UniversalTokenAnalyzer({
               </span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-[9.5px] font-mono text-slate-405">
+            <div className="flex items-center gap-1.5 text-[9.5px] font-mono text-slate-405 flex-wrap">
               <span>CA:</span>
               <span
                 onClick={handleCopyCAAddress}
@@ -591,6 +609,20 @@ export default function UniversalTokenAnalyzer({
                   <Icons.Copy className="w-3 h-3 text-slate-500 hover:text-cyber-cyan opacity-80 shrink-0" />
                 )}
               </span>
+              <a
+                href={getExplorerUrl(tokenAddress, blockchainName)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[8px] font-bold ${
+                  themeMode === 'light'
+                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800'
+                    : 'bg-cyber-cyan/10 border-cyber-cyan/30 text-cyber-cyan hover:bg-cyber-cyan/25 hover:text-white'
+                } transition-all uppercase cursor-pointer shrink-0 inline-flex`}
+                title="View contract on block explorer"
+              >
+                <Icons.ExternalLink className="w-3 h-3 shrink-0" />
+                <span>Explorer</span>
+              </a>
             </div>
           </div>
         </div>

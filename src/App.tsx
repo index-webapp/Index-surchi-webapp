@@ -2825,6 +2825,24 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
   const innerVerificationBoxBg = isLight ? "bg-white border border-slate-200 text-slate-800" : "bg-[#050614]/80 border border-slate-500/10 text-slate-450";
   const innerTimelineEventBg = isLight ? "bg-white border border-slate-200/80" : "bg-[#090a1f]/45 border border-[#1b204e]/50";
 
+  const getExplorerUrl = (address: string, chainId: string) => {
+    const c = (chainId || 'ethereum').toLowerCase();
+    const cleanAddr = encodeURIComponent(address.trim());
+    if (c.includes('solana') || c === 'sol') return `https://solscan.io/token/${cleanAddr}`;
+    if (c.includes('bsc') || c.includes('binance') || c.includes('bnb')) return `https://bscscan.com/token/${cleanAddr}`;
+    if (c.includes('base')) return `https://basescan.org/token/${cleanAddr}`;
+    if (c.includes('arbitrum') || c.includes('arb')) return `https://arbiscan.io/token/${cleanAddr}`;
+    if (c.includes('polygon') || c.includes('matic')) return `https://polygonscan.com/token/${cleanAddr}`;
+    if (c.includes('avalanche') || c.includes('avax')) return `https://snowtrace.io/token/${cleanAddr}`;
+    if (c.includes('sui')) return `https://suiscan.xyz/mainnet/coin/${cleanAddr}`;
+    if (c.includes('aptos')) return `https://aptoscan.com/coin/${cleanAddr}`;
+    if (c.includes('tron')) return `https://tronscan.org/#/token20/${cleanAddr}`;
+    if (c.includes('sonic')) return `https://sonicscan.org/token/${cleanAddr}`;
+    if (c.includes('hyperliquid') || c.includes('hl')) return `https://hyperscan.xyz/address/${cleanAddr}`;
+    if (c.includes('bitcoin') || c.includes('btc')) return `https://mempool.space/address/${cleanAddr}`;
+    return `https://etherscan.io/token/${cleanAddr}`;
+  };
+
   return (
     <div id="live-ledger-card" className={`${containerClasses} rounded-xl p-4 sm:p-5 text-left space-y-4 relative overflow-hidden animate-fade-in font-sans`}>
       {/* Dynamic Link Copied Notification Bubble */}
@@ -2910,6 +2928,20 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
               <span className={`transition-all select-all truncate max-w-[150px] sm:max-w-xs cursor-pointer ${isLight ? 'text-slate-500 hover:text-indigo-650' : 'text-slate-400 hover:text-white'}`} title="Click to copy contract address">
                 {details.address}
               </span>
+              <a
+                href={getExplorerUrl(details.address || '', details.chainId)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`flex items-center gap-1 px-1.5 py-0.5 rounded border text-[8.5px] font-bold ${
+                  isLight
+                    ? 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100 hover:text-indigo-800'
+                    : 'bg-cyber-cyan/10 border-cyber-cyan/30 text-cyber-cyan hover:bg-cyber-cyan/25 hover:text-white'
+                } transition-all uppercase cursor-pointer shrink-0 inline-flex`}
+                title="View contract on block explorer"
+              >
+                <Icons.ExternalLink className="w-3 h-3 shrink-0" />
+                <span>Explorer</span>
+              </a>
             </div>
           </div>
         </div>
@@ -3669,11 +3701,11 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
 
       {/* Pool Created Date/Time display at the end of the panel */}
       <div className="pt-3 border-t border-cyber-border/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a2316]/20 px-3.5 py-2 rounded-xl border border-[#00ff88]/15">
-        <div className="flex items-center gap-2.5 text-xs font-mono font-bold text-[#00ff88]">
-          <Icons.Calendar className="w-4 h-4 text-[#00ff88] shrink-0 animate-pulse" />
+        <div className="flex items-center gap-2.5 text-xs font-mono font-bold text-black">
+          <Icons.Calendar className="w-4 h-4 text-black shrink-0 animate-pulse" />
           <span>LIQUIDITY POOL CREATED (UTC): {forensics.lpCreatedDate}</span>
         </div>
-        <span className="text-[8px] font-mono text-[#00ff88]/60 uppercase tracking-widest font-black shrink-0 sm:text-right">Decentralized Dex Ledger Synchronized &bull; Mainnet Verified</span>
+        <span className="text-[8px] font-mono text-black/80 uppercase tracking-widest font-black shrink-0 sm:text-right">Decentralized Dex Ledger Synchronized &bull; Mainnet Verified</span>
       </div>
 
     </div>
