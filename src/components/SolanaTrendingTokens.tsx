@@ -22,6 +22,7 @@ interface TrendingToken {
   chainId: string;
   dexId?: string;
   createdAt?: string;
+  pairCreatedAt?: number;
 }
 
 const CHAIN_LOGOS: Record<string, string> = {
@@ -710,7 +711,8 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
             chainId: pairChain,
             holdersCount: null,
             dexId: formattedDex,
-            createdAt: pair.pairCreatedAt ? new Date(pair.pairCreatedAt).toISOString() : new Date(Date.now() - (compiledTokensMap.size * 5 * 60000)).toISOString()
+            createdAt: pair.pairCreatedAt ? new Date(pair.pairCreatedAt).toISOString() : new Date(Date.now() - (compiledTokensMap.size * 5 * 60000)).toISOString(),
+            pairCreatedAt: pair.pairCreatedAt || 0
           };
 
           const existingRecord = compiledTokensMap.get(addr);

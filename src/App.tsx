@@ -510,9 +510,9 @@ function getTokenForensics(address: string, totalSupply: number, chainId?: strin
     ? "🔥 LP Genesis Burn Confirmed (100% burned/frozen permanently)" 
     : "🔒 LP Liquidity Locked (98.4% locked in certified multi-sig registry)";
 
-  // Timestamps (present is May 27, 2026)
+  // Timestamps (present is actual current time)
   const offsetMs = (seed * 114514) % (240 * 24 * 60 * 60 * 1000);
-  const nowTs = 1779843386000; // May 2026 UTC
+  const nowTs = Date.now(); // Actual current UTC
   const createdTs = pairCreatedAt && pairCreatedAt > 0 ? pairCreatedAt : (nowTs - offsetMs - (6 * 3600 * 1000));
 
   const formattedDate = (ts: number) => {
@@ -2278,6 +2278,7 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
               liquidityUsd: mainPair.liquidity?.usd || originalDetails.liquidityUsd,
               volume24h: mainPair.volume?.h24 || originalDetails.volume24h,
               dexId: mainPair.dexId || originalDetails.dexId,
+              pairCreatedAt: mainPair.pairCreatedAt || originalDetails.pairCreatedAt,
             });
           }
         }
@@ -2386,6 +2387,7 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
             sells24h: pair.txns?.h24?.sells || originalDetails.sells24h,
             marketCap: pair.marketCap || originalDetails.marketCap,
             fdv: pair.fdv || originalDetails.fdv,
+            pairCreatedAt: pair.pairCreatedAt || originalDetails.pairCreatedAt,
           };
           setPolledDetails(freshDetails);
           
@@ -4551,7 +4553,7 @@ export default function App() {
         logoUrl: optionalToken.logo || '',
         chainId: optionalToken.chainId || 'solana',
         dexId: optionalToken.dexId || 'raydium',
-        pairCreatedAt: optionalToken.pairCreatedAt || Date.now() - 30 * 24 * 60 * 60 * 1000,
+        pairCreatedAt: optionalToken.pairCreatedAt || (optionalToken.createdAt ? new Date(optionalToken.createdAt).getTime() : 0) || Date.now() - 30 * 24 * 60 * 60 * 1000,
         websites: optionalToken.websites || [],
         socials: optionalToken.socials || []
       };
