@@ -400,6 +400,138 @@ const TRENDING_CACHE_TTL = 60000; // 60 seconds cache TTL as requested by top sc
 
 const globalMainnetTokens = new Map<string, any>();
 
+// Floating coins (ticker coins) server-side data models and background update pool
+const INITIAL_COINS_SERVER = [
+  { id: 'surchi', name: 'SURCHI', symbol: 'SURCHI', image: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg', current_price: 0.0215, price_change_percentage_24h: 3.42, isNative: true, address: '9u9surchi_ecosystem_token_placeholder' },
+  { id: 'bitcoin', name: 'Bitcoin', symbol: 'BTC', image: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png', current_price: 68450.20, price_change_percentage_24h: 1.45, address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599' },
+  { id: 'ethereum', name: 'Ethereum', symbol: 'ETH', image: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png', current_price: 3450.15, price_change_percentage_24h: -0.85, address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
+  { id: 'binancecoin', name: 'BNB', symbol: 'BNB', image: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png', current_price: 582.40, price_change_percentage_24h: 0.12, address: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c' },
+  { id: 'solana', name: 'Solana', symbol: 'SOL', image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png', current_price: 145.22, price_change_percentage_24h: 4.85, address: 'So11111111111111111111111111111111111111112' },
+  { id: 'ripple', name: 'XRP', symbol: 'XRP', image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png', current_price: 0.5234, price_change_percentage_24h: -0.42, address: '0x1d2f0da169232536e1541a78d8b6e26b5e1a437d' },
+  { id: 'cardano', name: 'Cardano', symbol: 'ADA', image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png', current_price: 0.4421, price_change_percentage_24h: -1.82, address: '0x3ee2200efb3400fabb9aacf31297cbdd1d435d47' },
+  { id: 'dogecoin', name: 'Dogecoin', symbol: 'DOGE', image: 'https://assets.coingecko.com/coins/images/759/large/doge.png', current_price: 0.1385, price_change_percentage_24h: 2.15, address: '0xba2ae424d960542353e3014c02737e911293e7ee5' },
+  { id: 'shiba-inu', name: 'Shiba Inu', symbol: 'SHIB', image: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png', current_price: 0.00001850, price_change_percentage_24h: -3.42, address: '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce' },
+  { id: 'avalanche-2', name: 'Avalanche', symbol: 'AVAX', image: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png', current_price: 32.40, price_change_percentage_24h: 3.12, address: '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7' },
+  { id: 'chainlink', name: 'Chainlink', symbol: 'LINK', image: 'https://assets.coingecko.com/coins/images/877/large/chainlink-link-logo.png', current_price: 14.85, price_change_percentage_24h: 1.22, address: '0x514910771af9ca656af840dff83e8264ecf986ca' },
+  { id: 'matic-network', name: 'Polygon', symbol: 'MATIC', image: 'https://assets.coingecko.com/coins/images/4713/large/polygon.png', current_price: 0.6215, price_change_percentage_24h: -0.95, address: '0x7d1afbc70cf79790a9131d37b6de2c6c9429a306' },
+  { id: 'polkadot', name: 'Polkadot', symbol: 'DOT', image: 'https://assets.coingecko.com/coins/images/12171/large/polkadot.png', current_price: 5.85, price_change_percentage_24h: -1.15, address: '0x7083609fce4d1d8dc0c979aab8c869ea2c873402' },
+  { id: 'near', name: 'Near', symbol: 'NEAR', image: 'https://assets.coingecko.com/coins/images/10365/large/near.png', current_price: 5.40, price_change_percentage_24h: 6.30, address: '0x1fa4a73a33019911269c542b075c61411ec50153' },
+  { id: 'uniswap', name: 'Uniswap', symbol: 'UNI', image: 'https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png', current_price: 7.25, price_change_percentage_24h: -2.40, address: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984' },
+  { id: 'litecoin', name: 'Litecoin', symbol: 'LTC', image: 'https://assets.coingecko.com/coins/images/2/large/litecoin.png', current_price: 76.80, price_change_percentage_24h: 0.50, address: '0x4338665c0f57242d47d2beb7c3a4115162a3cdcb' },
+  { id: 'pepe', name: 'Pepe', symbol: 'PEPE', image: 'https://assets.coingecko.com/coins/images/29850/large/pepe-token.png', current_price: 0.00001140, price_change_percentage_24h: 11.20, address: '0x6982508145454ce325ddbe47a25d4ec3d2311933' },
+  { id: 'the-open-network', name: 'Toncoin', symbol: 'TON', image: 'https://assets.coingecko.com/coins/images/17980/large/ton_token.png', current_price: 7.15, price_change_percentage_24h: 3.80, address: '0x582d872a33c0289f3546079c5ad107d6203cf224' },
+  { id: 'stellar', name: 'Stellar', symbol: 'XLM', image: 'https://assets.coingecko.com/coins/images/100/large/stellar.png', current_price: 0.1085, price_change_percentage_24h: -0.22, address: '0x43c934a845205f0b514417d757d7235b8f53f1b9' },
+  { id: 'sui', name: 'Sui', symbol: 'SUI', image: 'https://assets.coingecko.com/coins/images/26375/large/sui_logo.png', current_price: 1.15, price_change_percentage_24h: 8.45, address: '0xe0C600B9b719602AA2D093206497BbeAbCcFCbC5' },
+  { id: 'aptos', name: 'Aptos', symbol: 'APT', image: 'https://assets.coingecko.com/coins/images/26455/large/aptos_logo.png', current_price: 8.40, price_change_percentage_24h: 1.85, address: '0x1fa4ad03b22cf9a1ff0e1e9badb64c01f0b51478' }
+];
+
+let globalTickerCoins = [...INITIAL_COINS_SERVER];
+
+async function updateTickerPrices() {
+  console.log("[TICKER] Polling latest prices for floating coins in the background...");
+  try {
+    // 1. Fetch SURCHI price from DexScreener search
+    let surchiPrice = 0.0215;
+    let surchiChange = 3.42;
+    try {
+      const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI', { signal: getTimeoutSignal(4000) });
+      if (sRes.ok) {
+        const data = await sRes.json();
+        if (data && data.pairs && data.pairs.length > 0) {
+          const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
+          if (filtered.length > 0) {
+            filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+            const bestPair = filtered[0];
+            surchiPrice = parseFloat(bestPair.priceUsd || '0.0215');
+            surchiChange = parseFloat(bestPair.priceChange?.h24 || '3.42');
+            console.log(`[TICKER] Live SURCHI price tracked in background: $${surchiPrice} (${surchiChange}%)`);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("[TICKER] Failed to poll SURCHI price in background:", err);
+    }
+
+    // 2. Fetch prices for other coins in batch from DexScreener
+    const nonSurchiAddresses = globalTickerCoins
+      .filter(c => c.id !== 'surchi' && c.address && !c.address.includes('_placeholder'))
+      .map(c => c.address);
+
+    try {
+      const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${nonSurchiAddresses.join(",")}`, { signal: getTimeoutSignal(5000) });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.pairs)) {
+          // Group pairs by base token address
+          const addressToBestPair = new Map<string, any>();
+          data.pairs.forEach((pair: any) => {
+            const addr = (pair.baseToken?.address || "").toLowerCase();
+            if (!addr) return;
+            const existing = addressToBestPair.get(addr);
+            const currentLiq = pair.liquidity?.usd || 0;
+            const existingLiq = existing?.liquidity?.usd || 0;
+            if (!existing || currentLiq > existingLiq) {
+              addressToBestPair.set(addr, pair);
+            }
+          });
+
+          // Update globalTickerCoins map
+          globalTickerCoins = globalTickerCoins.map(coin => {
+            if (coin.id === 'surchi') {
+              return { ...coin, current_price: surchiPrice, price_change_percentage_24h: surchiChange };
+            }
+            const cleanAddr = (coin.address || "").toLowerCase();
+            const bestPair = addressToBestPair.get(cleanAddr);
+            if (bestPair) {
+              return {
+                ...coin,
+                current_price: parseFloat(bestPair.priceUsd) || coin.current_price,
+                price_change_percentage_24h: parseFloat(bestPair.priceChange?.h24) || coin.price_change_percentage_24h
+              };
+            }
+            return coin;
+          });
+          console.log("[TICKER] Background price polling complete. Coins updated with live onchain pairs.");
+        }
+      }
+    } catch (err) {
+      console.warn("[TICKER] DexScreener batch address fetch error, trying CoinGecko fallback...", err);
+      try {
+        const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=22&page=1', { signal: getTimeoutSignal(4000) });
+        if (cgRes.ok) {
+          const cgData = await cgRes.json();
+          if (Array.isArray(cgData)) {
+            const cgMap = new Map<string, any>();
+            cgData.forEach((coin: any) => {
+              cgMap.set(coin.id.toLowerCase(), coin);
+            });
+
+            globalTickerCoins = globalTickerCoins.map(coin => {
+              if (coin.id === 'surchi') {
+                return { ...coin, current_price: surchiPrice, price_change_percentage_24h: surchiChange };
+              }
+              const matched = cgMap.get(coin.id.toLowerCase());
+              if (matched) {
+                return {
+                  ...coin,
+                  current_price: matched.current_price || coin.current_price,
+                  price_change_percentage_24h: matched.price_change_percentage_24h || coin.price_change_percentage_24h
+                };
+              }
+              return coin;
+            });
+            console.log("[TICKER] Background price polling complete via CoinGecko fallback.");
+          }
+        }
+      } catch (cgErr) {
+        console.warn("[TICKER] Final CoinGecko fallback failed:", cgErr);
+      }
+    }
+  } catch (err) {
+    console.error("[TICKER] Critical background price polling error:", err);
+  }
+}
+
 // Seed with extremely recognizable real mainnet tokens so we instantly have 100% real validated tokens on first paint
 const SEED_TOKENS = [
   {
@@ -764,10 +896,18 @@ async function harvestMainnetTokens(force = false) {
 // Start initial background harvest asynchronously on launch
 harvestMainnetTokens(true).catch(err => console.error("Initial harvest launch failed:", err));
 
+// Start initial background ticker updates
+updateTickerPrices().catch(err => console.error("Initial ticker prices update failed:", err));
+
 // Set up background recurring harvester every 10 minutes (600,000ms) to ensure continuous data freshness
 setInterval(() => {
   harvestMainnetTokens().catch(err => console.error("Background continuous harvest failed:", err));
 }, 600000);
+
+// Set up background recurring ticker prices updater every 45 seconds to keep tickers completely updated and fresh
+setInterval(() => {
+  updateTickerPrices().catch(err => console.error("Background ticker prices update failed:", err));
+}, 45000);
 
 app.get("/api/proxy/dexscreener/trending", async (req, res) => {
   try {
@@ -920,6 +1060,15 @@ app.get("/api/proxy/dexscreener/search", async (req, res) => {
     console.error("DexScreener search proxy failure in backend:", err.message || err);
     return res.status(502).json({ error: "Failed to execute search through proxy connection." });
   }
+});
+
+// REST-API endpoint for serving background loaded, live ticker coins
+app.get("/api/proxy/tickerCoins", (req, res) => {
+  return res.json({
+    success: true,
+    coins: globalTickerCoins,
+    lastPolled: new Date().toISOString()
+  });
 });
 
 // REST-API endpoint proxy for securing CryptoPanic API access

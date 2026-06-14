@@ -3725,12 +3725,18 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
       </div>
 
       {/* Pool Created Date/Time display at the end of the panel */}
-      <div className="pt-3 border-t border-cyber-border/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#0a2316]/20 px-3.5 py-2 rounded-xl border border-[#00ff88]/15">
-        <div className="flex items-center gap-2.5 text-xs font-mono font-bold text-black">
-          <Icons.Calendar className="w-4 h-4 text-black shrink-0 animate-pulse" />
+      <div className={`pt-3 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-3.5 py-2 rounded-xl border ${
+        isLight 
+          ? 'bg-emerald-50/75 border-emerald-500/20 text-emerald-900 shadow-2xs' 
+          : 'bg-[#0a2316]/20 border-[#00ff88]/15 text-[#00ff88]'
+      }`}>
+        <div className="flex items-center gap-2.5 text-xs font-mono font-bold">
+          <Icons.Calendar className={`w-4 h-4 shrink-0 animate-pulse ${isLight ? 'text-emerald-700' : 'text-[#00ff88]'}`} />
           <span>LIQUIDITY POOL CREATED (UTC): {forensics.lpCreatedDate}</span>
         </div>
-        <span className="text-[8px] font-mono text-black/80 uppercase tracking-widest font-black shrink-0 sm:text-right">Decentralized Dex Ledger Synchronized &bull; Mainnet Verified</span>
+        <span className={`text-[8px] font-mono uppercase tracking-widest font-black shrink-0 sm:text-right ${
+          isLight ? 'text-emerald-800/80' : 'text-emerald-400/80'
+        }`}>Decentralized Dex Ledger Synchronized &bull; Mainnet Verified</span>
       </div>
 
     </div>
@@ -4530,6 +4536,17 @@ export default function App() {
     setCurrentResult(null);
     setFormInputs({ token: address });
 
+    // Smoothly scroll the page to top immediately when selected from the home page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Also target the analyzed panel section specifically with a slight timeout to ensure it mounts
+    setTimeout(() => {
+      const element = document.getElementById('analyzed-token-section');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+
     if (optionalToken) {
       // Map TrendingToken back into liveTokenInfo style
       const details = {
@@ -5294,7 +5311,7 @@ export default function App() {
         <div className={`px-2 sm:px-4 py-4 sm:py-5 max-w-7xl lg:max-w-[1700px] w-full mx-auto flex-1 space-y-6 md:space-y-8 animate-fade-in`}>
           
           {!activeCustomPage && isTokenAnalyzed && analyzedDetails ? (
-            <div className="space-y-4 text-left animate-fade-in">
+            <div id="analyzed-token-section" className="space-y-4 text-left animate-fade-in">
               <header className="flex items-center gap-1.5 px-3 py-1 bg-[#00ff88]/5 w-max rounded border border-[#00ff88]/25">
                 <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
                 <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>

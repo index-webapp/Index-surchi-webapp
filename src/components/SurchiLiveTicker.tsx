@@ -25,20 +25,20 @@ const COIN_ADDRESS_MAP: Record<string, string> = {
   binancecoin: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c', // WBNB Smart Chain
   solana: 'So11111111111111111111111111111111111111112', // WSOL native Solana mint
   ripple: '0x1d2f0da169232536e1541a78d8b6e26b5e1a437d',
+  'usd-coin': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
   cardano: '0x3ee2200efb3400fabb9aacf31297cbdd1d435d47',
-  dogecoin: '0xba2ae424d960542353e3014c02737e911293e7ee5',
-  'shiba-inu': '0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce',
   'avalanche-2': '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
+  dogecoin: '0xba2ae4247960542353e3014c02737e911293e7ee5',
+  tron: '0x50327e0212ccc7724d30f6a251a3511eb9bdfb10',
   chainlink: '0x514910771af9ca656af840dff83e8264ecf986ca',
-  'matic-network': '0x7d1afbc70cf79790a9131d37b6de2c6c9429a306',
   polkadot: '0x7083609fce4d1d8dc0c979aab8c869ea2c873402',
-  near: '0x1fa4a73a33019911269c542b075c61411ec50153',
+  'matic-network': '0x7d1afbc70cf79790a9131d37b6de2c6c9429a306',
   uniswap: '0x1f9840a85d5af5bf1d1762f925bdaddc4201f984',
   litecoin: '0x4338665c0f57242d47d2beb7c3a4115162a3cdcb',
-  pepe: '0x6982508145454ce325ddbe47a25d4ec3d2311933',
-  'the-open-network': '0x582d872a33c0289f3546079c5ad107d6203cf224',
+  cosmos: '0x1fa4ad03b22cf9a1ff0e1e9badb64c01f0b51478',
   stellar: '0x43c934a845205f0b514417d757d7235b8f53f1b9',
-  sui: '0xe0C600B9b719602AA2D093206497BbeAbCcFCbC5',
+  'internet-computer': '0x2bf7ab5db7edf685c29012f2c8a306fe963dcedf',
+  filecoin: '0xfa8959d332616f7435fca3d68bcbb05b8214b7e1',
   aptos: '0x1fa4ad03b22cf9a1ff0e1e9badb64c01f0b51478'
 };
 
@@ -58,31 +58,32 @@ const INITIAL_COINS: TickerItem[] = [
   { id: 'binancecoin', name: 'BNB', symbol: 'bnb', image: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png', current_price: 582.40, price_change_percentage_24h: 0.12, address: COIN_ADDRESS_MAP['binancecoin'] },
   { id: 'solana', name: 'Solana', symbol: 'sol', image: 'https://assets.coingecko.com/coins/images/4128/large/solana.png', current_price: 145.22, price_change_percentage_24h: 4.85, address: COIN_ADDRESS_MAP['solana'] },
   { id: 'ripple', name: 'XRP', symbol: 'xrp', image: 'https://assets.coingecko.com/coins/images/44/large/xrp-symbol-white-128.png', current_price: 0.5234, price_change_percentage_24h: -0.42, address: COIN_ADDRESS_MAP['ripple'] },
+  { id: 'usd-coin', name: 'USD Coin', symbol: 'usdc', image: 'https://assets.coingecko.com/coins/images/6319/large/USD_Coin_icon.png', current_price: 1.00, price_change_percentage_24h: 0.01, address: COIN_ADDRESS_MAP['usd-coin'] },
   { id: 'cardano', name: 'Cardano', symbol: 'ada', image: 'https://assets.coingecko.com/coins/images/975/large/cardano.png', current_price: 0.4421, price_change_percentage_24h: -1.82, address: COIN_ADDRESS_MAP['cardano'] },
-  { id: 'dogecoin', name: 'Dogecoin', symbol: 'doge', image: 'https://assets.coingecko.com/coins/images/759/large/doge.png', current_price: 0.1385, price_change_percentage_24h: 2.15, address: COIN_ADDRESS_MAP['dogecoin'] },
-  { id: 'shiba-inu', name: 'Shiba Inu', symbol: 'shib', image: 'https://assets.coingecko.com/coins/images/11939/large/shiba.png', current_price: 0.00001850, price_change_percentage_24h: -3.42, address: COIN_ADDRESS_MAP['shiba-inu'] },
   { id: 'avalanche-2', name: 'Avalanche', symbol: 'avax', image: 'https://assets.coingecko.com/coins/images/12559/large/Avalanche_Circle_RedWhite_Trans.png', current_price: 32.40, price_change_percentage_24h: 3.12, address: COIN_ADDRESS_MAP['avalanche-2'] },
+  { id: 'dogecoin', name: 'Dogecoin', symbol: 'doge', image: 'https://assets.coingecko.com/coins/images/759/large/doge.png', current_price: 0.1385, price_change_percentage_24h: 2.15, address: COIN_ADDRESS_MAP['dogecoin'] },
+  { id: 'tron', name: 'TRON', symbol: 'trx', image: 'https://assets.coingecko.com/coins/images/1094/large/tron.png', current_price: 0.1172, price_change_percentage_24h: 0.45, address: COIN_ADDRESS_MAP['tron'] },
   { id: 'chainlink', name: 'Chainlink', symbol: 'link', image: 'https://assets.coingecko.com/coins/images/877/large/chainlink-link-logo.png', current_price: 14.85, price_change_percentage_24h: 1.22, address: COIN_ADDRESS_MAP['chainlink'] },
-  { id: 'matic-network', name: 'Polygon', symbol: 'matic', image: 'https://assets.coingecko.com/coins/images/4713/large/polygon.png', current_price: 0.6215, price_change_percentage_24h: -0.95, address: COIN_ADDRESS_MAP['matic-network'] },
   { id: 'polkadot', name: 'Polkadot', symbol: 'dot', image: 'https://assets.coingecko.com/coins/images/12171/large/polkadot.png', current_price: 5.85, price_change_percentage_24h: -1.15, address: COIN_ADDRESS_MAP['polkadot'] },
-  { id: 'near', name: 'Near', symbol: 'near', image: 'https://assets.coingecko.com/coins/images/10365/large/near.png', current_price: 5.40, price_change_percentage_24h: 6.30, address: COIN_ADDRESS_MAP['near'] },
+  { id: 'matic-network', name: 'Polygon', symbol: 'matic', image: 'https://assets.coingecko.com/coins/images/4713/large/polygon.png', current_price: 0.6215, price_change_percentage_24h: -0.95, address: COIN_ADDRESS_MAP['matic-network'] },
   { id: 'uniswap', name: 'Uniswap', symbol: 'uni', image: 'https://assets.coingecko.com/coins/images/12504/large/uniswap-uni.png', current_price: 7.25, price_change_percentage_24h: -2.40, address: COIN_ADDRESS_MAP['uniswap'] },
   { id: 'litecoin', name: 'Litecoin', symbol: 'ltc', image: 'https://assets.coingecko.com/coins/images/2/large/litecoin.png', current_price: 76.80, price_change_percentage_24h: 0.50, address: COIN_ADDRESS_MAP['litecoin'] },
-  { id: 'pepe', name: 'Pepe', symbol: 'pepe', image: 'https://assets.coingecko.com/coins/images/29850/large/pepe-token.jpeg', current_price: 0.00001140, price_change_percentage_24h: 11.20, address: COIN_ADDRESS_MAP['pepe'] },
-  { id: 'the-open-network', name: 'Toncoin', symbol: 'ton', image: 'https://assets.coingecko.com/coins/images/17980/large/ton_token.png', current_price: 7.15, price_change_percentage_24h: 3.80, address: COIN_ADDRESS_MAP['the-open-network'] },
+  { id: 'cosmos', name: 'Cosmos', symbol: 'atom', image: 'https://assets.coingecko.com/coins/images/1481/large/cosmos_hub.png', current_price: 8.50, price_change_percentage_24h: -0.75, address: COIN_ADDRESS_MAP['cosmos'] },
   { id: 'stellar', name: 'Stellar', symbol: 'xlm', image: 'https://assets.coingecko.com/coins/images/100/large/stellar.png', current_price: 0.1085, price_change_percentage_24h: -0.22, address: COIN_ADDRESS_MAP['stellar'] },
-  { id: 'sui', name: 'Sui', symbol: 'sui', image: 'https://assets.coingecko.com/coins/images/26375/large/sui_logo.png', current_price: 1.15, price_change_percentage_24h: 8.45, address: COIN_ADDRESS_MAP['sui'] },
+  { id: 'internet-computer', name: 'ICP', symbol: 'icp', image: 'https://assets.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png', current_price: 11.20, price_change_percentage_24h: 4.10, address: COIN_ADDRESS_MAP['internet-computer'] },
+  { id: 'filecoin', name: 'Filecoin', symbol: 'fil', image: 'https://assets.coingecko.com/coins/images/12817/large/filecoin.png', current_price: 5.65, price_change_percentage_24h: -2.10, address: COIN_ADDRESS_MAP['filecoin'] },
   { id: 'aptos', name: 'Aptos', symbol: 'apt', image: 'https://assets.coingecko.com/coins/images/26455/large/aptos_logo.png', current_price: 8.40, price_change_percentage_24h: 1.85, address: COIN_ADDRESS_MAP['aptos'] }
 ];
 
 export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiveTickerProps) {
-  const [items, setItems] = useState<TickerItem[]>(INITIAL_COINS);
+  // Initialize prices as null for each coin to render blank spaces initially
+  const [livePrices, setLivePrices] = useState<Record<string, { price: number; change: number } | null>>({});
 
   const fetchTickerData = async () => {
     try {
       // 1. Fetch native SURCHI token data from DexScreener
-      let nativePrice = 0.0215;
-      let nativeChange = 3.42;
+      let nativePrice: number | null = null;
+      let nativeChange: number | null = null;
       try {
         let response;
         let data;
@@ -92,7 +93,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
           if (response.ok && contentType.includes("application/json")) {
             data = await response.json();
           } else {
-            throw new Error('Fallback direct');
+            throw new Error('Fallback');
           }
         } catch {
           const directRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
@@ -106,88 +107,110 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
           if (filtered.length > 0) {
             filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
             const bestPair = filtered[0];
-            nativePrice = parseFloat(bestPair.priceUsd || '0.0215');
-            nativeChange = parseFloat(bestPair.priceChange?.h24 || '3.42');
+            nativePrice = parseFloat(bestPair.priceUsd);
+            nativeChange = parseFloat(bestPair.priceChange?.h24 || '0');
           }
         }
       } catch (err) {
-        console.warn('Ticker proxy / direct SURCHI fetch failed, using baseline:', err);
+        console.warn('Ticker proxy SURCHI fetch failed:', err);
       }
 
-      // 2. Fetch top 20 coins by market cap from CoinGecko
-      let fetchedCoins: TickerItem[] = [];
+      // 2. Fetch top 20 requested coins by IDs in a single batch to avoid rate limits
+      const coinIds = [
+        'bitcoin', 'ethereum', 'binancecoin', 'solana', 'ripple',
+        'usd-coin', 'cardano', 'avalanche-2', 'dogecoin', 'tron',
+        'chainlink', 'polkadot', 'matic-network', 'uniswap', 'litecoin',
+        'cosmos', 'stellar', 'internet-computer', 'filecoin', 'aptos'
+      ];
+      
+      const newPrices: Record<string, { price: number; change: number }> = {};
+
+      if (nativePrice !== null && !isNaN(nativePrice)) {
+        newPrices['surchi'] = { price: nativePrice, change: nativeChange ?? 0 };
+      }
+
       try {
-        const response = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=20&page=1');
+        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true`);
         if (response.ok) {
           const data = await response.json();
-          if (Array.isArray(data)) {
-            fetchedCoins = data.map((coin: any) => ({
-              id: coin.id,
-              name: coin.name,
-              symbol: coin.symbol.toUpperCase(),
-              image: coin.image,
-              current_price: coin.current_price,
-              price_change_percentage_24h: coin.price_change_percentage_24h || 0,
-              address: COIN_ADDRESS_MAP[coin.id] || ''
-            }));
+          if (data && typeof data === 'object') {
+            coinIds.forEach((id) => {
+              if (data[id] && typeof data[id].usd === 'number') {
+                newPrices[id] = {
+                  price: data[id].usd,
+                  change: data[id].usd_24h_change || 0
+                };
+              }
+            });
           }
         } else {
-          throw new Error(`CoinGecko returned status ${response.status}`);
+          throw new Error('CoinGecko fallback');
         }
       } catch (cgErr) {
-        console.warn('CoinGecko API is rate-limited or offline, using robust ticker fallback:', cgErr);
-        // Fallback to updating only the native SURCHI price in the initial list
-        const updatedInitial = INITIAL_COINS.map(coin => {
-          if (coin.isNative) {
-            return { ...coin, current_price: nativePrice, price_change_percentage_24h: nativeChange };
+        // Fallback to CryptoCompare
+        try {
+          const ccResponse = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,SOL,XRP,USDC,ADA,AVAX,DOGE,TRX,LINK,DOT,MATIC,UNI,LTC,ATOM,XLM,ICP,FIL,APT&tsyms=USD');
+          if (ccResponse.ok) {
+            const ccData = await ccResponse.json();
+            if (ccData && ccData.RAW) {
+              INITIAL_COINS.filter(c => !c.isNative).forEach(coin => {
+                const sym = coin.symbol.toUpperCase();
+                const rawData = ccData.RAW[sym]?.USD;
+                if (rawData && typeof rawData.PRICE === 'number') {
+                  newPrices[coin.id] = {
+                    price: rawData.PRICE,
+                    change: rawData.CHANGEPCT24HOUR || 0
+                  };
+                }
+              });
+            }
           }
-          return coin;
-        });
-        setItems(updatedInitial);
-        return;
+        } catch (ccErr) {
+          // Silent catch to handle errors silently as requested
+        }
       }
 
-      // If we got CoinGecko data, construct the final ordered list
-      if (fetchedCoins.length > 0) {
-        const surchiTokenItem: TickerItem = {
-          id: 'surchi',
-          name: 'SURCHI',
-          symbol: 'SURCHI',
-          image: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg',
-          current_price: nativePrice,
-          price_change_percentage_24h: nativeChange,
-          isNative: true,
-          address: COIN_ADDRESS_MAP['surchi']
-        };
-        setItems([surchiTokenItem, ...fetchedCoins]);
-      }
+      // Update the state using prev state callback to preserve previous successfully fetched items 
+      setLivePrices(prev => {
+        const updated = { ...prev };
+        Object.entries(newPrices).forEach(([id, val]) => {
+          if (val) {
+            updated[id] = val;
+          }
+        });
+        return updated;
+      });
     } catch (globalErr) {
-      console.warn('Silent live ticker update failure:', globalErr);
+      // Handle silently as required
     }
   };
 
   useEffect(() => {
-    fetchTickerData();
-    const interval = setInterval(fetchTickerData, 60000); // refresh every 60 seconds
-    return () => clearInterval(interval);
+    let timeoutId: NodeJS.Timeout;
+
+    const poll = async () => {
+      await fetchTickerData();
+      // Poll every 10–30 seconds (randomize within that range to avoid rate limits)
+      const nextInterval = Math.floor(Math.random() * (30000 - 10000 + 1)) + 10000;
+      timeoutId = setTimeout(poll, nextInterval);
+    };
+
+    poll();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, []);
 
   // Duplicate items array to make the infinite horizontal animation perfectly seamless
-  const duplicatedItems = [...items, ...items];
+  const duplicatedItems = [...INITIAL_COINS, ...INITIAL_COINS];
 
   return (
-    <div className={`w-full relative overflow-hidden select-none flex h-11 items-center border-t border-b transition-all duration-300 ${
+    <div className={`w-full relative overflow-hidden select-none flex h-[50px] items-center border-t border-b transition-all duration-300 ${
       themeMode === 'light' 
-        ? 'bg-white border-gray-200 shadow-2xs text-gray-800' 
+        ? 'bg-white border-gray-200 shadow-3xs text-gray-800' 
         : 'bg-[#030308]/60 border-cyber-border text-slate-300'
     }`}>
-      {/* 
-        DEVELOPER ACCENT NOTE:
-        Speed is reduced further by 6%.
-        Our previous duration was 56s.
-        56 / 0.94 = 59.57s.
-        Using 59.5s to achieve precisely 6% slower marquee speed.
-      */}
       <style>{`
         @keyframes tickerMarquee {
           0% { transform: translate3d(0, 0, 0); }
@@ -200,12 +223,23 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
         }
       `}</style>
       
-      <div className="animate-ticker py-1">
+      <div className="animate-ticker py-0.5">
         {duplicatedItems.map((item, index) => {
-          const isUp = item.price_change_percentage_24h >= 0;
-          const rank = (index % items.length) + 1;
-          const displayPrice = item.isNative ? '0.000' : formatAbbreviatedPrice(item.current_price);
-          const displayChange = item.isNative ? '0.00' : Math.abs(item.price_change_percentage_24h).toFixed(2);
+          const liveData = livePrices[item.id];
+          const hasData = !!liveData;
+
+          const price = hasData ? liveData.price : 0;
+          const changePct = hasData ? liveData.change : 0;
+          const isUp = changePct >= 0;
+          const rank = (index % INITIAL_COINS.length) + 1;
+
+          const displayPrice = hasData 
+            ? (price < 0.1 
+              ? price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 }) 
+              : formatAbbreviatedPrice(price))
+            : '';
+            
+          const displayChange = hasData ? Math.abs(changePct).toFixed(2) : '';
           
           return (
             <div 
@@ -216,35 +250,27 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                     name: item.name,
                     symbol: item.symbol?.toUpperCase(),
                     address: item.address,
-                    priceUsd: item.current_price,
-                    priceChange24h: item.price_change_percentage_24h,
+                    priceUsd: hasData ? price : item.current_price,
+                    priceChange24h: hasData ? changePct : item.price_change_percentage_24h,
                     logo: item.image,
                     chainId: item.id === 'solana' ? 'solana' : 'ethereum'
                   });
                 }
               }}
-              className="flex items-center gap-3 px-4 shrink-0 border-r border-gray-100/10 cursor-pointer hover:opacity-80 transition-all select-none"
+              className="flex items-center gap-3 px-5 shrink-0 border-r border-gray-100/10 cursor-pointer hover:opacity-85 transition-all select-none"
               title={`Click to analyze ${item.name}`}
             >
-              <div 
-                className={`flex items-center gap-2 py-1 px-2.5 rounded-full transition-all ${
-                  themeMode === 'light' ? 'text-gray-800' : 'text-slate-300'
-                }`}
-              >
-                {/* Sequentially dynamic coin ranking numbers */}
-                <span className={`text-[10px] font-mono select-none px-1 rounded bg-slate-500/10 ${
-                  themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'
+              <div className="flex items-center gap-[7px] py-1">
+                
+                {/* 1. Coin Icon */}
+                <div className={`w-[20px] h-[20px] rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border-[1.5px] relative shadow-sm ${
+                  themeMode === 'light' ? 'border-gray-500' : 'border-cyber-cyan/80'
                 }`}>
-                  #{rank}
-                </span>
-
-                {/* Logo with safe image error handling */}
-                <div className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border border-gray-200/20 relative">
                   <img 
                     src={item.image} 
                     alt={item.symbol} 
                     referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover rounded-full"
+                    className="w-full h-full object-cover rounded-full select-none"
                     onError={(e) => {
                       e.currentTarget.style.display = 'none';
                       if (e.currentTarget.nextElementSibling) {
@@ -252,42 +278,60 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                       }
                     }}
                   />
-                  <div className="hidden absolute inset-0 flex items-center justify-center text-[7px] text-gray-500 font-black tracking-tight leading-none bg-purple-55">
+                  <div className="hidden absolute inset-0 flex items-center justify-center text-[7px] text-gray-500 font-extrabold bg-[#8b5cf6]/20">
                     {item.symbol.slice(0, 2)}
                   </div>
                 </div>
 
-                {/* Token Symbol/Name */}
-                <span className="text-[11.5px] tracking-tight uppercase font-extrabold font-sans flex items-center gap-1">
+                {/* 2. Rank */}
+                <span className={`text-[11px] font-mono font-black ${
+                  themeMode === 'light' ? 'text-gray-600' : 'text-slate-400'
+                }`}>
+                  #{rank}
+                </span>
+
+                {/* 3. Ticker */}
+                <span className={`text-[11px] uppercase font-mono font-black flex items-center gap-0.5 ${
+                  themeMode === 'light' ? 'text-gray-950' : 'text-white'
+                }`}>
                   {item.symbol}
                   {item.isNative && (
-                    <span className={`text-[8px] px-1 py-0.25 rounded ${
-                      themeMode === 'light' ? 'bg-slate-100 text-slate-600' : 'bg-slate-800 text-slate-400'
-                    }`}>
+                    <span className="bg-cyan-500/20 text-[#00E5FF] text-[6.5px] px-0.5 py-0.1 rounded-xs scale-90 font-sans tracking-wide font-black">
                       NATIVE
                     </span>
                   )}
                 </span>
 
-                {/* Live Value */}
-                <span className="text-[11.5px] font-mono font-medium">
-                  ${displayPrice}
-                </span>
+                {/* 4. Price */}
+                {hasData ? (
+                  <span 
+                    className={`text-[11px] font-mono font-black tracking-tight ${
+                      themeMode === 'light' ? 'text-gray-950' : 'text-slate-100'
+                    }`}
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
+                  >
+                    ${displayPrice}
+                  </span>
+                ) : null}
 
-                {/* Percentage Change indicator */}
-                <span 
-                  className={`inline-flex items-center font-mono font-black text-[10px] ${
-                    item.isNative 
-                      ? (themeMode === 'light' ? 'text-slate-500' : 'text-slate-400')
-                      : isUp ? 'text-emerald-500' : 'text-rose-500'
-                  }`}
-                >
-                  {item.isNative ? '➖' : (isUp ? '🔼' : '🔽')}{displayChange}%
-                </span>
+                {/* 5. 24h % Change with directional indicator */}
+                {hasData ? (
+                  <span className={`text-[10.5px] font-mono font-black tracking-tight ${
+                    isUp ? 'text-emerald-500' : 'text-rose-500'
+                  }`}>
+                    {isUp ? `▲ +${displayChange}%` : `▼ -${displayChange}%`}
+                  </span>
+                ) : (
+                  <span className={`text-[10.5px] font-mono font-black tracking-tight ${
+                    themeMode === 'light' ? 'text-gray-500' : 'text-slate-400'
+                  }`}>
+                    —
+                  </span>
+                )}
               </div>
 
-              {/* Ticker Separator | (unless it's native token or standard separator format) */}
-              <span className={`font-light text-[11px] font-mono leading-none select-none ${themeMode === 'light' ? 'text-gray-300' : 'text-slate-800'}`}>|</span>
+              {/* Ticker Separator */}
+              <span className={`font-light text-[11px] font-mono leading-none select-none ml-1 opacity-20 ${themeMode === 'light' ? 'text-gray-400' : 'text-slate-500'}`}>|</span>
             </div>
           );
         })}
