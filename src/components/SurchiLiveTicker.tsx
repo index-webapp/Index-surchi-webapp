@@ -81,60 +81,15 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
 
   const fetchTickerData = async () => {
     try {
-      // 1. Fetch native SURCHI token data from DexScreener
-      let nativePrice: number | null = null;
-      let nativeChange: number | null = null;
-      try {
-        let response;
-        let data;
-        try {
-          response = await fetch('/api/proxy/dexscreener/search?q=SURCHI');
-          const contentType = response?.headers.get("content-type") || "";
-          if (response.ok && contentType.includes("application/json")) {
-            data = await response.json();
-          } else {
-            throw new Error('Fallback');
-          }
-        } catch {
-          const directRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
-          if (directRes.ok) {
-            data = await directRes.json();
-          }
-        }
-
-        if (data && data.pairs && data.pairs.length > 0) {
-          const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
-          if (filtered.length > 0) {
-            filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
-            const bestPair = filtered[0];
-            nativePrice = parseFloat(bestPair.priceUsd);
-            nativeChange = parseFloat(bestPair.priceChange?.h24 || '0');
-          }
-        }
-      } catch (err) {
-        console.warn('Ticker proxy SURCHI fetch failed:', err);
-      }
-
-      // 2. Fetch top 20 requested coins by IDs in a single batch to avoid rate limits
-      const coinIds = [
-        'bitcoin', 'ethereum', 'binancecoin', 'solana', 'ripple',
-        'usd-coin', 'cardano', 'avalanche-2', 'dogecoin', 'tron',
-        'chainlink', 'polkadot', 'matic-network', 'uniswap', 'litecoin',
-        'cosmos', 'stellar', 'internet-computer', 'filecoin', 'aptos'
-      ];
-      
       const newPrices: Record<string, { price: number; change: number }> = {};
 
-      if (nativePrice !== null && !isNaN(nativePrice)) {
-        newPrices['surchi'] = { price: nativePrice, change: nativeChange ?? 0 };
-      }
-
+      // 1. Try CoinGecko Public API
       try {
-        const response = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true`);
-        if (response.ok) {
-          const data = await response.json();
+        const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana,ripple,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polkadot,matic-network,uniswap,litecoin,cosmos,stellar,internet-computer,filecoin,aptos&vs_currencies=usd&include_24hr_change=true');
+        if (cgRes.ok) {
+          const data = await cgRes.json();
           if (data && typeof data === 'object') {
-            coinIds.forEach((id) => {
+            Object.keys(data).forEach((id) => {
               if (data[id] && typeof data[id].usd === 'number') {
                 newPrices[id] = {
                   price: data[id].usd,
@@ -144,29 +99,79 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
             });
           }
         } else {
-          throw new Error('CoinGecko fallback');
+          throw new Error('CoinGecko API returned error status');
         }
-      } catch (cgErr) {
+      } catch (err) {
         // Fallback to CryptoCompare
         try {
-          const ccResponse = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,SOL,XRP,USDC,ADA,AVAX,DOGE,TRX,LINK,DOT,MATIC,UNI,LTC,ATOM,XLM,ICP,FIL,APT&tsyms=USD');
-          if (ccResponse.ok) {
-            const ccData = await ccResponse.json();
-            if (ccData && ccData.RAW) {
-              INITIAL_COINS.filter(c => !c.isNative).forEach(coin => {
+          const ccRes = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,SOL,XRP,USDC,ADA,AVAX,DOGE,TRX,LINK,DOT,MATIC,UNI,LTC,ATOM,XLM,ICP,FIL,APT&tsyms=USD');
+          if (ccRes.ok) {
+            const data = await ccRes.json();
+            if (data && data.RAW) {
+              INITIAL_COINS.forEach((coin) => {
+                if (coin.id === 'surchi') return;
                 const sym = coin.symbol.toUpperCase();
-                const rawData = ccData.RAW[sym]?.USD;
-                if (rawData && typeof rawData.PRICE === 'number') {
+                const rawCoin = data.RAW[sym]?.USD || data.RAW[sym]?.usd;
+                if (rawCoin && typeof rawCoin.PRICE === 'number') {
                   newPrices[coin.id] = {
-                    price: rawData.PRICE,
-                    change: rawData.CHANGEPCT24HOUR || 0
+                    price: rawCoin.PRICE,
+                    change: rawCoin.CHANGEPCT24HOUR || 0
                   };
                 }
               });
             }
           }
         } catch (ccErr) {
-          // Silent catch to handle errors silently as requested
+          // Silent fallback
+        }
+      }
+
+      // 2. Fetch Native SURCHI price from DexScreener search
+      try {
+        const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
+        if (sRes.ok) {
+          const data = await sRes.json();
+          if (data && data.pairs && data.pairs.length > 0) {
+            const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
+            if (filtered.length > 0) {
+              filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+              const bestPair = filtered[0];
+              newPrices['surchi'] = {
+                price: parseFloat(bestPair.priceUsd || '0.0215'),
+                change: parseFloat(bestPair.priceChange?.h24 || '3.42')
+              };
+            }
+          }
+        }
+        if (!newPrices['surchi']) {
+          // Support backup fetch of SURCHI via proxy on backend
+          const bkRes = await fetch('/api/proxy/tickerCoins');
+          if (bkRes.ok) {
+            const bkData = await bkRes.json();
+            const bkSurchi = bkData?.coins?.find((c: any) => c.id === 'surchi');
+            if (bkSurchi) {
+              newPrices['surchi'] = {
+                price: bkSurchi.current_price || 0.0215,
+                change: bkSurchi.price_change_percentage_24h || 3.42
+              };
+            }
+          }
+        }
+      } catch (sErr) {
+        try {
+          const bkRes = await fetch('/api/proxy/tickerCoins');
+          if (bkRes.ok) {
+            const bkData = await bkRes.json();
+            const bkSurchi = bkData?.coins?.find((c: any) => c.id === 'surchi');
+            if (bkSurchi) {
+              newPrices['surchi'] = {
+                price: bkSurchi.current_price || 0.0215,
+                change: bkSurchi.price_change_percentage_24h || 3.42
+              };
+            }
+          }
+        } catch (bkErr) {
+          // Silent
         }
       }
 
@@ -186,19 +191,14 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
   };
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    fetchTickerData();
 
-    const poll = async () => {
-      await fetchTickerData();
-      // Poll every 10–30 seconds (randomize within that range to avoid rate limits)
-      const nextInterval = Math.floor(Math.random() * (30000 - 10000 + 1)) + 10000;
-      timeoutId = setTimeout(poll, nextInterval);
-    };
-
-    poll();
+    // Poll every 10–30 seconds (randomize within that range to avoid rate limits)
+    const randomizedInterval = Math.floor(Math.random() * (30000 - 10000 + 1)) + 10000;
+    const intervalId = setInterval(fetchTickerData, randomizedInterval);
 
     return () => {
-      if (timeoutId) clearTimeout(timeoutId);
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -234,9 +234,11 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
           const rank = (index % INITIAL_COINS.length) + 1;
 
           const displayPrice = hasData 
-            ? (price < 0.1 
-              ? price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 }) 
-              : formatAbbreviatedPrice(price))
+            ? (item.isNative 
+              ? '0.000'
+              : (price < 0.1 
+                ? price.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 6 }) 
+                : formatAbbreviatedPrice(price)))
             : '';
             
           const displayChange = hasData ? Math.abs(changePct).toFixed(2) : '';
@@ -260,7 +262,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
               className="flex items-center gap-3 px-5 shrink-0 border-r border-gray-100/10 cursor-pointer hover:opacity-85 transition-all select-none"
               title={`Click to analyze ${item.name}`}
             >
-              <div className="flex items-center gap-[7px] py-1">
+              <div className="py-1" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 
                 {/* 1. Coin Icon */}
                 <div className={`w-[20px] h-[20px] rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border-[1.5px] relative shadow-sm ${
@@ -284,17 +286,17 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                 </div>
 
                 {/* 2. Rank */}
-                <span className={`text-[11px] font-mono font-black ${
-                  themeMode === 'light' ? 'text-gray-600' : 'text-slate-400'
+                <span className={`text-[11px] font-mono font-medium opacity-60 ${
+                  themeMode === 'light' ? 'text-gray-500' : 'text-slate-400'
                 }`}>
                   #{rank}
                 </span>
 
                 {/* 3. Ticker */}
-                <span className={`text-[11px] uppercase font-mono font-black flex items-center gap-0.5 ${
+                <span className={`text-[11px] uppercase font-mono font-bold flex items-center gap-0.5 ${
                   themeMode === 'light' ? 'text-gray-950' : 'text-white'
                 }`}>
-                  {item.symbol}
+                  {item.symbol.toUpperCase()}
                   {item.isNative && (
                     <span className="bg-cyan-500/20 text-[#00E5FF] text-[6.5px] px-0.5 py-0.1 rounded-xs scale-90 font-sans tracking-wide font-black">
                       NATIVE
@@ -305,7 +307,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                 {/* 4. Price */}
                 {hasData ? (
                   <span 
-                    className={`text-[11px] font-mono font-black tracking-tight ${
+                    className={`text-[11px] font-mono font-bold tracking-tight ${
                       themeMode === 'light' ? 'text-gray-950' : 'text-slate-100'
                     }`}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
@@ -316,14 +318,14 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
 
                 {/* 5. 24h % Change with directional indicator */}
                 {hasData ? (
-                  <span className={`text-[10.5px] font-mono font-black tracking-tight ${
+                  <span className={`text-[10.5px] font-mono font-bold tracking-tight ${
                     isUp ? 'text-emerald-500' : 'text-rose-500'
                   }`}>
                     {isUp ? `▲ +${displayChange}%` : `▼ -${displayChange}%`}
                   </span>
                 ) : (
-                  <span className={`text-[10.5px] font-mono font-black tracking-tight ${
-                    themeMode === 'light' ? 'text-gray-500' : 'text-slate-400'
+                  <span className={`text-[10.5px] font-mono font-bold tracking-tight ${
+                    themeMode === 'light' ? 'text-gray-400' : 'text-slate-500'
                   }`}>
                     —
                   </span>

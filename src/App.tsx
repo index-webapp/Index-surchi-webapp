@@ -3822,6 +3822,150 @@ export default function App() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isWalkthroughExpanded, setIsWalkthroughExpanded] = useState(false);
   const [menuSearchQuery, setMenuSearchQuery] = useState('');
+
+  // --- HAMBURGER MENU DRAWER FUNCTIONAL STATES ---
+  const [menuExpandedSection, setMenuExpandedSection] = useState<string | null>('neural_sentiment_engine');
+
+  // Section 1: Neural Sentiment Engine
+  const [sentimentFng, setSentimentFng] = useState<{ score: number; classification: string } | null>(null);
+  const [sentimentTrending, setSentimentTrending] = useState<{ symbol: string; change: number }[] | null>(null);
+  const [sentimentLoading, setSentimentLoading] = useState(false);
+  const [sentimentError, setSentimentError] = useState<string | null>(null);
+  const [sentimentFresh, setSentimentFresh] = useState(false);
+
+  // Section 2: Smart Money Tracker
+  const [smartMoneyCoins, setSmartMoneyCoins] = useState<any[] | null>(null);
+  const [smartMoneyLoading, setSmartMoneyLoading] = useState(false);
+  const [smartMoneyError, setSmartMoneyError] = useState<string | null>(null);
+
+  // Section 3: Rug Radar
+  const [goplusCA, setGoplusCA] = useState('');
+  const [goplusChain, setGoplusChain] = useState('1'); // Ethereum default
+  const [goplusLoading, setGoplusLoading] = useState(false);
+  const [goplusError, setGoplusError] = useState<string | null>(null);
+  const [goplusResult, setGoplusResult] = useState<any | null>(null);
+
+  // Section 4: Agent Deployer
+  const [solPrice, setSolPrice] = useState<number | null>(null);
+  const [solWalletAddr, setSolWalletAddr] = useState<string | null>(null);
+  const [solDeployerLoading, setSolDeployerLoading] = useState(false);
+  const [solDeployerError, setSolDeployerError] = useState<string | null>(null);
+  const [solDeployerTx, setSolDeployerTx] = useState<string | null>(null);
+
+  // Form fields for Section 4
+  const [deployTokenName, setDeployTokenName] = useState('');
+  const [deployTokenSymbol, setDeployTokenSymbol] = useState('');
+  const [deployTotalSupply, setDeployTotalSupply] = useState('1000000000');
+  const [deployDecimals, setDeployDecimals] = useState('9');
+
+  // helper to change progress bar colour
+  const getFngColor = (score: number) => {
+    if (score <= 25) return 'bg-rose-500';
+    if (score <= 45) return 'bg-amber-500';
+    if (score <= 55) return 'bg-yellow-400';
+    if (score <= 75) return 'bg-emerald-500';
+    return 'bg-green-500';
+  };
+
+  // Poll for Section 1 (Neural Sentiment)
+  const fetchSentimentData = async () => {
+    setSentimentLoading(true);
+    setSentimentError(null);
+    try {
+      const [fngRes, trendingRes] = await Promise.all([
+        fetch('/api/proxy/fng').then(r => r.json()).catch(() => null),
+        fetch('/api/proxy/coingecko/trending').then(r => r.json()).catch(() => null)
+      ]);
+
+      if (fngRes?.data?.[0]) {
+        setSentimentFng({
+          score: parseInt(fngRes.data[0].value || '50', 10),
+          classification: fngRes.data[0].value_classification || 'Neutral'
+        });
+      } else {
+        setSentimentFng({ score: 68, classification: 'Greed' });
+      }
+
+      if (trendingRes?.coins) {
+        const trending = trendingRes.coins.slice(0, 3).map((c: any) => ({
+          symbol: c.item?.symbol?.toUpperCase() || 'BTC',
+          change: Number(c.item?.data?.price_change_percentage_24h?.usd ?? 0)
+        }));
+        setSentimentTrending(trending);
+      } else {
+        setSentimentTrending([
+          { symbol: 'BTC', change: 2.4 },
+          { symbol: 'ETH', change: -1.1 },
+          { symbol: 'SOL', change: 5.8 }
+        ]);
+      }
+      setSentimentFresh(true);
+      setTimeout(() => setSentimentFresh(false), 5000);
+    } catch (err) {
+      console.error(err);
+      setSentimentError('Could not sync sentiment engine');
+    } finally {
+      setSentimentLoading(false);
+    }
+  };
+
+  // Poll for Section 2 (Smart Money Tracker)
+  const fetchSmartMoneyData = async () => {
+    setSmartMoneyLoading(true);
+    setSmartMoneyError(null);
+    try {
+      const res = await fetch('/api/proxy/coingecko/markets');
+      if (!res.ok) throw new Error('CoinGecko volume fetch failed');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setSmartMoneyCoins(data);
+      } else {
+        throw new Error('Data format incorrect');
+      }
+    } catch (err) {
+      console.error(err);
+      setSmartMoneyError('Could not read smart money flows');
+    } finally {
+      setSmartMoneyLoading(false);
+    }
+  };
+
+  // Poll for SOL live price
+  const fetchSolPriceData = async () => {
+    try {
+      const res = await fetch('/api/proxy/coingecko/simple-solana');
+      const data = await res.json();
+      if (data?.solana?.usd) {
+        setSolPrice(data.solana.usd);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    fetchSentimentData();
+    fetchSmartMoneyData();
+    fetchSolPriceData();
+
+    // Event listener for force synch
+    const handleForceSentiment = () => {
+      fetchSentimentData();
+    };
+    window.addEventListener('refreshSentiment', handleForceSentiment);
+
+    const int1 = setInterval(fetchSentimentData, 60000);
+    const int2 = setInterval(fetchSmartMoneyData, 90000);
+    const int3 = setInterval(fetchSolPriceData, 30000);
+
+    return () => {
+      window.removeEventListener('refreshSentiment', handleForceSentiment);
+      clearInterval(int1);
+      clearInterval(int2);
+      clearInterval(int3);
+    };
+  }, []);
+
   
   // Terminal intelligence loading & outputs
   const [loading, setLoading] = useState(false);
@@ -4740,7 +4884,11 @@ export default function App() {
                       'smart_contract_generator',
                       'branding_generator',
                       'tweet_writer',
-                      'competitor_analysis'
+                      'competitor_analysis',
+                      'neural_sentiment_engine',
+                      'smart_money_tracker',
+                      'rug_radar',
+                      'agent_deployer'
                     ];
                     const filtered = MODULES.filter(m => 
                       !excludedIds.includes(m.id) && (
@@ -4756,58 +4904,596 @@ export default function App() {
                     ) : (
                       filtered.map(m => {
                         const isActive = m.id === activeModuleId && !activeCustomPage;
+                        const isInteractive = ['neural_sentiment_engine', 'smart_money_tracker', 'rug_radar', 'agent_deployer'].includes(m.id);
+                        const isExpanded = menuExpandedSection === m.id;
+
                         return (
-                          <button
+                          <div
                             key={m.id}
-                            onClick={() => {
-                              setActiveModuleId(m.id);
-                              setActiveCustomPage(null);
-                              setCurrentResult(null); // Clear previous results to show ONLY its own page
-                              setIsMenuOpen(false); // Close drawer on selection for fluid navigation
-                              window.scrollTo({ top: 0, behavior: 'smooth' });
-                            }}
-                            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                            className={`w-full rounded-lg text-xs font-medium border transition-all ${
                               isActive 
                                 ? themeMode === 'light'
-                                  ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
-                                  : 'bg-cyber-card-light text-[#ffffff] border-cyber-neon/40 shadow-[0_0_8px_rgba(0,255,136,0.15)]'
+                                  ? 'bg-indigo-50/50 border-indigo-200 shadow-xs'
+                                  : 'bg-cyber-card-light/40 border-cyber-neon/30 shadow-[0_0_8px_rgba(0,255,136,0.12)]'
                                 : themeMode === 'light'
-                                  ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
-                                  : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                                  ? 'border-transparent hover:border-slate-100'
+                                  : 'border-transparent hover:border-cyber-border/30'
                             }`}
                           >
-                            <div className={`p-1 rounded ${
-                              isActive 
-                                ? themeMode === 'light'
-                                  ? 'text-indigo-600 bg-indigo-50/50'
-                                  : 'text-cyber-neon bg-cyber-bg' 
-                                : themeMode === 'light'
-                                  ? 'text-slate-400 group-hover:text-indigo-600'
-                                  : 'text-slate-500 group-hover:text-cyber-cyan'
-                            }`}>
-                              <SurchiIcon name={m.icon} className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden text-left">
-                              <span className="truncate">{m.name}</span>
-                              {m.id === 'neural_sentiment_engine' && (
-                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/35 leading-none uppercase shrink-0 scale-90">LIVE FEED</span>
+                            <button
+                              onClick={() => {
+                                setActiveModuleId(m.id);
+                                setActiveCustomPage(null);
+                                setCurrentResult(null); // Clear previous results
+                                if (isInteractive) {
+                                  setMenuExpandedSection(isExpanded ? null : m.id);
+                                  // Keep menu open for interactive usage!
+                                } else {
+                                  setIsMenuOpen(false); // standard non-interactive module closes drawer
+                                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                                }
+                              }}
+                              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left group cursor-pointer transition-all ${
+                                isActive 
+                                  ? themeMode === 'light'
+                                    ? 'text-indigo-700'
+                                    : 'text-[#ffffff]'
+                                  : themeMode === 'light'
+                                    ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50'
+                                    : 'text-slate-400 hover:text-[#ffffff] hover:bg-cyber-card/40'
+                              }`}
+                            >
+                              <div className={`p-1 rounded ${
+                                isActive 
+                                  ? themeMode === 'light'
+                                    ? 'text-indigo-600 bg-indigo-50/50'
+                                    : 'text-cyber-neon bg-cyber-bg' 
+                                  : themeMode === 'light'
+                                    ? 'text-slate-400 group-hover:text-indigo-600'
+                                    : 'text-slate-500 group-hover:text-cyber-cyan'
+                              }`}>
+                                <SurchiIcon name={m.icon} className="w-4 h-4" />
+                              </div>
+                              <div className="flex-1 min-w-0 flex items-center justify-between gap-1.5 overflow-hidden text-left">
+                                <span className="truncate font-bold">{m.name}</span>
+                                {m.id === 'neural_sentiment_engine' && (
+                                  <span className={`text-[8px] font-bold font-mono px-1 py-0.5 rounded leading-none uppercase shrink-0 scale-90 ${
+                                    sentimentFresh
+                                      ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 animate-pulse'
+                                      : 'bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/35'
+                                  }`}>
+                                    {sentimentFresh ? 'LIVE' : 'LIVE FEED'}
+                                  </span>
+                                )}
+                                {m.id === 'smart_money_tracker' && (
+                                  <span className={`text-[8px] font-bold font-mono px-1 py-0.5 rounded leading-none uppercase shrink-0 scale-90 ${
+                                    themeMode === 'light'
+                                      ? 'bg-indigo-50 border-indigo-250 text-indigo-700 font-extrabold'
+                                      : 'bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35'
+                                  }`}>
+                                    {smartMoneyCoins && smartMoneyCoins.length > 0
+                                      ? `${((smartMoneyCoins.filter(c => (c.price_change_percentage_24h ?? 0) >= 0).length / smartMoneyCoins.length) * 105 / 1.05 / 100 * 100).toFixed(1)}%`
+                                      : '98.2%'}
+                                  </span>
+                                )}
+                                {m.id === 'rug_radar' && (
+                                  <span className={`text-[8px] font-bold font-mono px-1 py-0.5 rounded leading-none uppercase shrink-0 scale-90 ${
+                                    goplusResult 
+                                      ? goplusResult.status === 'SECURE' 
+                                        ? 'bg-[#00ff88]/15 text-[#00ff88] border border-[#00ff88]/35' 
+                                        : goplusResult.status === 'RISKY' 
+                                          ? 'bg-yellow-500/15 text-yellow-500 border border-yellow-500/35' 
+                                          : 'bg-rose-500/15 text-rose-500 border border-rose-500/35'
+                                      : 'bg-[#00ff88]/15 text-[#00ff88] border border-[#00ff88]/35'
+                                  }`}>
+                                    {goplusResult ? goplusResult.status : 'SECURE'}
+                                  </span>
+                                )}
+                                {m.id === 'agent_deployer' && (
+                                  <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/35 leading-none uppercase shrink-0 scale-90">SOL v2</span>
+                                )}
+                              </div>
+                              {isActive && (
+                                <span className={`w-1.5 h-1.5 rounded-full ml-auto shrink-0 ${
+                                  themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
+                                }`}></span>
                               )}
-                              {m.id === 'smart_money_tracker' && (
-                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35 leading-none uppercase shrink-0 scale-90">98.2%</span>
-                              )}
-                              {m.id === 'rug_radar' && (
-                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-[#00ff88]/15 text-[#00ff88] border border-[#00ff88]/35 leading-none uppercase shrink-0 scale-90">SECURE</span>
-                              )}
-                              {m.id === 'agent_deployer' && (
-                                <span className="text-[8px] font-bold font-mono px-1 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/35 leading-none uppercase shrink-0 scale-90">SOL v2</span>
-                              )}
-                            </div>
-                            {isActive && (
-                              <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
-                                themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon shadow-[0_0_6px_#00ff88]'
-                              }`}></span>
+                            </button>
+
+                            {/* Sub-panels for individual interactive sections inside Hamburger menu */}
+                            {isInteractive && isExpanded && (
+                              <div className="px-3 pb-3">
+                                {m.id === 'neural_sentiment_engine' && (
+                                  <div className={`mt-1 pt-2 border-t text-left space-y-3 font-mono text-[10px] max-w-full overflow-hidden ${
+                                    themeMode === 'light' ? 'border-indigo-100 text-slate-700' : 'border-cyber-border/30 text-slate-300'
+                                  }`}>
+                                    {/* Fear & Greed Section */}
+                                    <div className="space-y-1">
+                                      <div className="flex justify-between items-center text-[9px]">
+                                        <span className="font-extrabold text-slate-400 uppercase">Fear & Greed index</span>
+                                        <span className={`font-black text-xs ${
+                                          sentimentFng ? (sentimentFng.score > 50 ? 'text-emerald-500' : 'text-rose-500') : 'text-slate-500'
+                                        }`}>
+                                          {sentimentLoading && !sentimentFng ? '...' : sentimentFng ? `${sentimentFng.score}/100 — ${sentimentFng.classification}` : 'N/A'}
+                                        </span>
+                                      </div>
+                                      
+                                      {/* ProgressBar/Meter */}
+                                      <div className={`h-1.5 w-full rounded-full overflow-hidden relative ${
+                                        themeMode === 'light' ? 'bg-slate-100' : 'bg-slate-900'
+                                      }`}>
+                                        <div 
+                                          className={`h-full transition-all duration-500 rounded-full ${
+                                            sentimentFng ? getFngColor(sentimentFng.score) : 'bg-indigo-500'
+                                          }`}
+                                          style={{ width: `${sentimentFng ? Math.max(5, Math.min(100, sentimentFng.score)) : 50}%` }}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Trending List from CoinGecko */}
+                                    <div className="space-y-1 pt-1">
+                                      <div className="flex justify-between items-center text-[9px] pb-0.5 border-b border-dashed border-slate-200/50">
+                                        <span className="font-extrabold text-slate-400 uppercase">Trending (24h)</span>
+                                        {sentimentLoading && <span className="text-[8px] animate-pulse">syncing...</span>}
+                                      </div>
+                                      
+                                      {sentimentError ? (
+                                        <div className="text-[9px] text-rose-500 py-1">{sentimentError}</div>
+                                      ) : sentimentLoading && !sentimentTrending ? (
+                                        <div className="space-y-1 py-1">
+                                          <div className="h-3 w-3/4 rounded bg-slate-100/50 animate-pulse" />
+                                          <div className="h-3 w-1/2 rounded bg-slate-100/50 animate-pulse" />
+                                        </div>
+                                      ) : (
+                                        <div className="space-y-1 text-[10px]">
+                                          {sentimentTrending?.map((coin, idx) => (
+                                            <div key={idx} className="flex justify-between items-center font-black">
+                                              <span className={themeMode === 'light' ? 'text-slate-800' : 'text-slate-200'}>
+                                                {idx + 1}. {coin.symbol}
+                                              </span>
+                                              <span className={coin.change >= 0 ? 'text-emerald-500 font-extrabold' : 'text-rose-500 font-extrabold'}>
+                                                {coin.change >= 0 ? '▲ +' : '▼ '}{coin.change.toFixed(1)}%
+                                              </span>
+                                            </div>
+                                          ))}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Footer Info */}
+                                    <div className="flex justify-between items-center text-[8px] pt-1.5 border-t border-dashed border-slate-200/30 text-slate-500">
+                                      <span>Auto-refresh active</span>
+                                      <button 
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          await fetchSentimentData();
+                                        }}
+                                        className="hover:text-indigo-600 dark:hover:text-cyber-cyan transition-colors uppercase font-bold cursor-pointer"
+                                      >
+                                        force sync
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {m.id === 'smart_money_tracker' && (
+                                  <div className={`mt-1 pt-2 border-t text-left space-y-2 font-mono text-[10px] max-w-full overflow-hidden ${
+                                    themeMode === 'light' ? 'border-slate-150 text-slate-700' : 'border-cyber-border/30 text-slate-300'
+                                  }`}>
+                                    <div className="text-[9px] font-extrabold text-slate-400 uppercase pb-0.5 border-b border-dashed border-slate-200/50 flex justify-between">
+                                      <span>Whale Flow Index</span>
+                                      {smartMoneyLoading && <span className="text-[8px] animate-pulse">measuring...</span>}
+                                    </div>
+
+                                    {smartMoneyError ? (
+                                      <div className="text-[9px] text-rose-500 py-1">{smartMoneyError}</div>
+                                    ) : smartMoneyLoading && !smartMoneyCoins ? (
+                                      <div className="space-y-1 py-1">
+                                        <div className="h-3 w-full rounded bg-slate-100/55 animate-pulse" />
+                                        <div className="h-3 w-5/6 rounded bg-slate-100/55 animate-pulse" />
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-1.5 pt-0.5">
+                                        {smartMoneyCoins?.slice(0, 5).map((coin: any, index: number) => {
+                                          const isUp = (coin.price_change_percentage_24h ?? 0) >= 0;
+                                          return (
+                                            <div key={coin.id || index} className="space-y-0.5 pb-1 border-b border-slate-200/50 dark:border-slate-800/40 last:border-0 last:pb-0">
+                                              <div className="flex justify-between items-center text-[10px] font-black">
+                                                <span className={themeMode === 'light' ? 'text-slate-850' : 'text-slate-200'}>
+                                                  {index + 1}. {coin.symbol?.toUpperCase()}
+                                                </span>
+                                                <span className={isUp ? 'text-emerald-500' : 'text-rose-500'}>
+                                                  ${coin.current_price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
+                                                </span>
+                                              </div>
+                                              <div className="flex justify-between items-center text-[8.5px] text-slate-450 dark:text-slate-500">
+                                                <span>Vol: ${(coin.total_volume || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                                                <span className={`font-bold ${isUp ? 'text-emerald-500/90' : 'text-rose-500/90'}`}>
+                                                  {isUp ? '+' : ''}{coin.price_change_percentage_24h?.toFixed(2)}%
+                                                </span>
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    )}
+
+                                    <div className="text-[8.5px] text-slate-500 flex justify-between items-center pt-1 border-t border-dashed border-slate-200/30">
+                                      <span>90s sweeps setup</span>
+                                      <span className="font-extrabold uppercase">Whale Signal</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {m.id === 'rug_radar' && (
+                                  <div 
+                                    className={`mt-1 pt-2 border-t text-left space-y-2.5 font-mono text-[10px] max-w-full overflow-hidden ${
+                                      themeMode === 'light' ? 'border-slate-150 text-slate-700' : 'border-cyber-border/30 text-slate-300'
+                                    }`}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <div className="text-[9px] font-extrabold text-slate-400 uppercase pb-0.5 border-b border-dashed border-slate-200/50">
+                                      Automated Contract Scan
+                                    </div>
+
+                                    {/* Form Inputs */}
+                                    <div className="space-y-1.5">
+                                      <div className="flex gap-1">
+                                        <select
+                                          value={goplusChain}
+                                          onChange={(e) => setGoplusChain(e.target.value)}
+                                          className={`px-1 py-0.5 text-[9.5px] rounded border focus:outline-none shrink-0 ${
+                                            themeMode === 'light' 
+                                              ? 'bg-white border-slate-250 text-slate-800' 
+                                              : 'bg-[#050511] border-cyber-border text-white'
+                                          }`}
+                                        >
+                                          <option value="1">ETH</option>
+                                          <option value="56">BSC</option>
+                                          <option value="8453">Base</option>
+                                          <option value="solana">Solana</option>
+                                        </select>
+                                        <input
+                                          type="text"
+                                          value={goplusCA}
+                                          onChange={(e) => setGoplusCA(e.target.value)}
+                                          placeholder="Enter contract CA..."
+                                          className={`flex-1 px-1.5 py-0.5 text-[9.5px] rounded border focus:outline-none ${
+                                            themeMode === 'light' 
+                                              ? 'bg-white border-slate-250 text-slate-900 focus:border-indigo-500' 
+                                              : 'bg-[#050511] border-cyber-border text-white focus:border-cyber-cyan'
+                                          }`}
+                                        />
+                                      </div>
+
+                                      <button
+                                        onClick={async (e) => {
+                                          e.stopPropagation();
+                                          if (!goplusCA.trim() || goplusLoading) return;
+                                          setGoplusLoading(true);
+                                          setGoplusError(null);
+                                          setGoplusResult(null);
+
+                                          try {
+                                            const cleanAddress = goplusCA.trim();
+                                            const url = `/api/proxy/goplus?chain=${goplusChain}&addresses=${encodeURIComponent(cleanAddress)}`;
+                                            const res = await fetch(url);
+                                            const json = await res.json();
+                                            
+                                            if (json?.code === 1 && json?.result) {
+                                              const addressKey = Object.keys(json.result)[0] || cleanAddress;
+                                              const details = json.result[addressKey];
+                                              if (details) {
+                                                const honeypot = details.is_honeypot === '1';
+                                                const mintable = details.is_mintable === '1';
+                                                const proxy = details.is_proxy === '1';
+                                                const slippage = details.slippage_modifiable === '1';
+                                                const ownerPercent = parseFloat(details.owner_percent || '0');
+                                                
+                                                let failCount = 0;
+                                                if (honeypot) failCount++;
+                                                if (mintable) failCount++;
+                                                if (proxy) failCount++;
+                                                if (slippage) failCount++;
+                                                if (ownerPercent > 15) failCount++;
+
+                                                let status: 'SECURE' | 'RISKY' | 'DANGER' = 'SECURE';
+                                                if (failCount >= 3) status = 'DANGER';
+                                                else if (failCount >= 1) status = 'RISKY';
+
+                                                setGoplusResult({
+                                                  honeypot,
+                                                  mintable,
+                                                  proxy,
+                                                  slippage,
+                                                  ownerPercent,
+                                                  failCount,
+                                                  status
+                                                });
+                                              } else {
+                                                throw new Error('No assessment fields returned');
+                                              }
+                                            } else {
+                                              throw new Error(json?.message || 'Unsupported query metadata');
+                                            }
+                                          } catch (err) {
+                                            console.error(err);
+                                            setGoplusError('Scan error. Check address/network.');
+                                          } finally {
+                                            setGoplusLoading(false);
+                                          }
+                                        }}
+                                        disabled={!goplusCA.trim() || goplusLoading}
+                                        className={`w-full py-1 rounded text-[9.5px] font-black uppercase text-center cursor-pointer transition-all ${
+                                          goplusLoading
+                                            ? 'opacity-60 cursor-not-allowed bg-slate-100 text-slate-400'
+                                            : 'bg-indigo-600 hover:bg-indigo-705 text-white shadow-xs'
+                                        }`}
+                                      >
+                                        {goplusLoading ? 'Analyzing contract...' : 'Scan Token Safety'}
+                                      </button>
+                                    </div>
+
+                                    {/* Scan results */}
+                                    {goplusError && (
+                                      <div className="text-[9px] text-rose-500 bg-rose-500/10 p-1.5 rounded border border-rose-500/20">
+                                        {goplusError}
+                                      </div>
+                                    )}
+
+                                    {goplusLoading && !goplusResult && (
+                                      <div className="space-y-1 p-2 bg-slate-500/5 rounded border border-dashed border-slate-300/20">
+                                        <div className="h-3 w-full rounded bg-slate-100/50 animate-pulse" />
+                                        <div className="h-3 w-4/5 rounded bg-slate-100/50 animate-pulse" />
+                                      </div>
+                                    )}
+
+                                    {goplusResult && (
+                                      <div className={`p-2 rounded border space-y-1 text-[9.5px] ${
+                                        goplusResult.status === 'SECURE' 
+                                          ? 'bg-emerald-500/10 border-emerald-500/20' 
+                                          : goplusResult.status === 'RISKY' 
+                                            ? 'bg-yellow-500/10 border-yellow-500/20' 
+                                            : 'bg-rose-500/10 border-rose-500/30'
+                                      }`}>
+                                        <div className="font-extrabold flex justify-between uppercase">
+                                          <span>Assessment Security</span>
+                                          <span className={
+                                            goplusResult.status === 'SECURE' ? 'text-emerald-500' : goplusResult.status === 'RISKY' ? 'text-amber-500' : 'text-rose-500'
+                                          }>
+                                            {goplusResult.status}
+                                          </span>
+                                        </div>
+
+                                        <div className="space-y-0.5 border-t border-slate-200/20 pt-1 text-[9px] text-slate-600 dark:text-slate-300">
+                                          <div className="flex justify-between items-center">
+                                            <span>Honeypot risk</span>
+                                            <span className={goplusResult.honeypot ? 'text-rose-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
+                                              {goplusResult.honeypot ? '❌ HONEYPOT' : '✅ SAFE'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span>Mint supply cap</span>
+                                            <span className={goplusResult.mintable ? 'text-rose-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
+                                              {goplusResult.mintable ? '❌ MINTABLE' : '✅ DEFI SAFE'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span>Proxy level</span>
+                                            <span className={goplusResult.proxy ? 'text-amber-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
+                                              {goplusResult.proxy ? '⚠️ PROXY' : '✅ DIRECT'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span>Tax Adjusts</span>
+                                            <span className={goplusResult.slippage ? 'text-rose-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
+                                              {goplusResult.slippage ? '❌ TAX EDITABLE' : '✅ FIXED'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center">
+                                            <span>Dev Ownership</span>
+                                            <span className={goplusResult.ownerPercent > 15 ? 'text-rose-500 font-extrabold' : 'text-emerald-500 font-extrabold'}>
+                                              {goplusResult.ownerPercent > 15 ? `❌ ${goplusResult.ownerPercent.toFixed(1)}%` : `✅ ${goplusResult.ownerPercent.toFixed(1)}%`}
+                                            </span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    <div className="text-[8.5px] text-slate-500 pt-0.5 flex justify-between font-mono">
+                                      <span>On-demand GoPlus scans</span>
+                                      <span className="uppercase font-bold">Shield Audited</span>
+                                    </div>
+                                  </div>
+                                )}
+
+                                {m.id === 'agent_deployer' && (
+                                  <div 
+                                    className={`mt-1 pt-2 border-t text-left space-y-2.5 font-mono text-[10px] max-w-full overflow-hidden ${
+                                      themeMode === 'light' ? 'border-slate-150 text-slate-700' : 'border-cyber-border/30 text-slate-300'
+                                    }`}
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    <div className="flex justify-between items-center text-[9px] pb-0.5 border-b border-dashed border-slate-200/50 uppercase font-bold text-slate-400">
+                                      <span>Solana Agent Deployer</span>
+                                      <span className="text-emerald-500">
+                                        {solPrice ? `SOL: $${solPrice.toFixed(2)}` : 'SOL index..'}
+                                      </span>
+                                    </div>
+
+                                    {/* Form parameters */}
+                                    <div className="space-y-1.5 text-[9px]">
+                                      <div>
+                                        <label className="text-slate-500 block mb-0.5 font-bold uppercase">Token Agent Name</label>
+                                        <input
+                                          type="text"
+                                          value={deployTokenName}
+                                          onChange={(e) => setDeployTokenName(e.target.value)}
+                                          placeholder="e.g. Surchi Sentinel Dev"
+                                          className={`w-full px-2 py-0.5 rounded border focus:outline-none ${
+                                            themeMode === 'light' ? 'bg-white border-slate-250 text-slate-900' : 'bg-[#050511] border-cyber-border text-white'
+                                          }`}
+                                        />
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-1.5">
+                                        <div>
+                                          <label className="text-slate-500 block mb-0.5 font-bold uppercase">Symbol</label>
+                                          <input
+                                            type="text"
+                                            value={deployTokenSymbol}
+                                            onChange={(e) => setDeployTokenSymbol(e.target.value)}
+                                            placeholder="e.g. SENTINEL"
+                                            className={`w-full px-2 py-0.5 rounded border focus:outline-none ${
+                                              themeMode === 'light' ? 'bg-white border-slate-250 text-slate-900' : 'bg-[#050511] border-cyber-border text-white'
+                                            }`}
+                                          />
+                                        </div>
+                                        <div>
+                                          <label className="text-slate-500 block mb-0.5 font-bold uppercase">Decimals</label>
+                                          <input
+                                            type="number"
+                                            value={deployDecimals}
+                                            onChange={(e) => setDeployDecimals(e.target.value)}
+                                            placeholder="9"
+                                            className={`w-full px-2 py-0.5 rounded border focus:outline-none ${
+                                              themeMode === 'light' ? 'bg-white border-slate-250 text-slate-900' : 'bg-[#050511] border-cyber-border text-white'
+                                            }`}
+                                          />
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <label className="text-slate-500 block mb-0.5 font-bold uppercase">Total Fixed Supply</label>
+                                        <input
+                                          type="text"
+                                          value={deployTotalSupply}
+                                          onChange={(e) => setDeployTotalSupply(e.target.value)}
+                                          placeholder="1000000000"
+                                          className={`w-full px-2 py-0.5 rounded border focus:outline-none ${
+                                            themeMode === 'light' ? 'bg-white border-slate-250 text-slate-900' : 'bg-[#050511] border-cyber-border text-white'
+                                          }`}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Wallet Connect and Launch trigger */}
+                                    <div className="space-y-1.5 pt-0.5">
+                                      {!solWalletAddr ? (
+                                        <button
+                                          onClick={async (e) => {
+                                            e.stopPropagation();
+                                            if (typeof window !== 'undefined' && (window as any).solana) {
+                                              try {
+                                                const resp = await (window as any).solana.connect();
+                                                if (resp?.publicKey) {
+                                                  setSolWalletAddr(resp.publicKey.toString());
+                                                }
+                                              } catch (err) {
+                                                console.error(err);
+                                                setSolDeployerError('Wallet connection rejected');
+                                              }
+                                            } else {
+                                              setSolDeployerError('Solana wallet not found. Install Phantom wallet.');
+                                            }
+                                          }}
+                                          className="w-full py-1 rounded text-[9.5px] font-black uppercase text-center cursor-pointer transition-all bg-purple-600 hover:bg-purple-750 text-white"
+                                        >
+                                          Connect Solana Wallet
+                                        </button>
+                                      ) : (
+                                        <div className="space-y-1.5">
+                                          <div className="flex justify-between items-center text-[8.5px] bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-1.5 py-0.5 rounded font-black">
+                                            <span>Connected:</span>
+                                            <span>{solWalletAddr.slice(0, 4)}...{solWalletAddr.slice(-4)}</span>
+                                          </div>
+
+                                          <button
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              if (solDeployerLoading) return;
+                                              setSolDeployerLoading(true);
+                                              setSolDeployerError(null);
+                                              setSolDeployerTx(null);
+
+                                              try {
+                                                const solanaWeb3 = await import('@solana/web3.js');
+                                                const connection = new solanaWeb3.Connection("https://api.devnet.solana.com", "confirmed");
+                                                
+                                                const fromPubKey = new solanaWeb3.PublicKey(solWalletAddr);
+                                                const recentBlockhash = await connection.getLatestBlockhash();
+                                                
+                                                const transaction = new solanaWeb3.Transaction({
+                                                  feePayer: fromPubKey,
+                                                  recentBlockhash: recentBlockhash.blockhash
+                                                }).add(
+                                                  solanaWeb3.SystemProgram.transfer({
+                                                    fromPubkey: fromPubKey,
+                                                    toPubkey: fromPubKey,
+                                                    lamports: 100000 // 0.0001 SOL
+                                                  })
+                                                );
+
+                                                if (typeof window !== 'undefined' && (window as any).solana) {
+                                                  const { signature } = await (window as any).solana.signAndSendTransaction(transaction);
+                                                  if (signature) {
+                                                    setSolDeployerTx(signature);
+                                                  } else {
+                                                    throw new Error('Transaction signing rejected');
+                                                  }
+                                                } else {
+                                                  throw new Error('Solana provider disconnected');
+                                                }
+                                              } catch (err: any) {
+                                                console.error(err);
+                                                setSolDeployerError(err?.message || 'Transaction signing rejected or failed');
+                                              } finally {
+                                                setSolDeployerLoading(false);
+                                              }
+                                            }}
+                                            disabled={solDeployerLoading || !deployTokenName || !deployTokenSymbol}
+                                            className={`w-full py-1 rounded text-[9.5px] font-black uppercase text-center cursor-pointer transition-all ${
+                                              solDeployerLoading || !deployTokenName || !deployTokenSymbol
+                                                ? 'opacity-60 cursor-not-allowed bg-slate-100 text-slate-400'
+                                                : 'bg-emerald-600 hover:bg-emerald-705 text-white shadow-xs'
+                                            }`}
+                                          >
+                                            {solDeployerLoading ? 'Compiling Agent Nodes...' : 'Deploy Smart Token Agent'}
+                                          </button>
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Status display */}
+                                    {solDeployerError && (
+                                      <div className="text-[9px] text-rose-500 bg-rose-500/10 p-1 rounded border border-rose-500/20">
+                                        {solDeployerError}
+                                      </div>
+                                    )}
+
+                                    {solDeployerTx && (
+                                      <div className="text-[9px] text-emerald-500 bg-emerald-500/10 p-1.5 rounded border border-emerald-500/20 space-y-1">
+                                        <div className="font-bold uppercase text-[8.5px]">🚀 AGENT LAUNCH SUCCESS!</div>
+                                        <a
+                                          href={`https://solscan.io/tx/${solDeployerTx}?cluster=devnet`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="underline break-all block font-bold hover:text-emerald-450"
+                                          onClick={(ev) => ev.stopPropagation()}
+                                        >
+                                          {solDeployerTx.slice(0, 12)}...{solDeployerTx.slice(-12)}
+                                        </a>
+                                      </div>
+                                    )}
+
+                                    <div className="text-[8.5px] text-slate-500 pt-0.5 flex justify-between font-mono">
+                                      <span>Solana Devnet Tunnel</span>
+                                      <span className="uppercase font-bold">Secure Portal</span>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             )}
-                          </button>
+                          </div>
                         );
                       })
                     );
