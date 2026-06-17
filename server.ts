@@ -909,6 +909,11 @@ setInterval(() => {
   updateTickerPrices().catch(err => console.error("Background ticker prices update failed:", err));
 }, 45000);
 
+// Health check endpoint for deployment validation and uptime tracking
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
 app.get("/api/proxy/dexscreener/trending", async (req, res) => {
   try {
     const chain = (req.query.chain as string || "all").toLowerCase();

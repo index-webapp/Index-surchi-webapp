@@ -86,28 +86,30 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
       // 1. Try our direct backend proxy ticker endpoint as the primary, high-performance source
       try {
         const bkRes = await fetch('/api/proxy/tickerCoins');
-        if (bkRes.ok) {
+        const bkContentType = bkRes.headers.get("content-type") || "";
+        if (bkRes.ok && bkContentType.includes("application/json")) {
           const bkData = await bkRes.json();
           if (bkData && Array.isArray(bkData.coins)) {
             bkData.coins.forEach((coin: any) => {
               if (coin && coin.id) {
                 newPrices[coin.id] = {
-                  price: coin.current_price,
-                  change: coin.price_change_percentage_24h || 0,
-                  image: coin.image
+                   price: coin.current_price,
+                   change: coin.price_change_percentage_24h || 0,
+                   image: coin.image
                 };
               }
             });
           }
         } else {
-          throw new Error('Local tickerCoins proxy offline or returned status error');
+          throw new Error('Local tickerCoins proxy offline or returned non-JSON response');
         }
       } catch (bkErr) {
         console.warn("Local tickerCoins proxy failed or offline, falling back directly to public endpoints:", bkErr);
         // Fallback: Try CoinGecko Public Markets API
         try {
           const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,ripple,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polkadot,matic-network,uniswap,litecoin,cosmos,stellar,internet-computer,filecoin,aptos&order=market_cap_desc&sparkline=false&price_change_percentage=24h');
-          if (cgRes.ok) {
+          const cgContentType = cgRes.headers.get("content-type") || "";
+          if (cgRes.ok && cgContentType.includes("application/json")) {
             const data = await cgRes.json();
             if (Array.isArray(data)) {
               data.forEach((coin: any) => {
@@ -121,13 +123,14 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
               });
             }
           } else {
-            throw new Error('CoinGecko API returned error status');
+            throw new Error('CoinGecko API returned error status or non-JSON content');
           }
         } catch (cgErr) {
           // Fallback to CryptoCompare
           try {
             const ccRes = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,SOL,XRP,USDC,ADA,AVAX,DOGE,TRX,LINK,DOT,MATIC,UNI,LTC,ATOM,XLM,ICP,FIL,APT&tsyms=USD');
-            if (ccRes.ok) {
+            const ccContentType = ccRes.headers.get("content-type") || "";
+            if (ccRes.ok && ccContentType.includes("application/json")) {
               const data = await ccRes.json();
               if (data && data.RAW) {
                 INITIAL_COINS.forEach((coin) => {
@@ -154,7 +157,8 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
       if (!newPrices['surchi']) {
         try {
           const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
-          if (sRes.ok) {
+          const sContentType = sRes.headers.get("content-type") || "";
+          if (sRes.ok && sContentType.includes("application/json")) {
             const data = await sRes.json();
             if (data && data.pairs && data.pairs.length > 0) {
               const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
@@ -168,7 +172,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
               }
             }
           }
-        } catch (sErr) {
+        } catch (err) {
           // Standby baseline
           newPrices['surchi'] = {
             price: 0.0215,

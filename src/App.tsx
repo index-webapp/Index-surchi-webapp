@@ -1253,8 +1253,9 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
 
         const url = `https://api.geckoterminal.com/api/v2/networks/${network}/pools/${pool}/ohlcv/${timeframe}?aggregate=${aggregate}&limit=100`;
         const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error(`Failed to fetch real-time data: ${res.status}`);
+        const contentType = res.headers.get("content-type") || "";
+        if (!res.ok || !contentType.includes("application/json")) {
+          throw new Error(`Failed to fetch real-time data: ${res.status} or returned invalid non-JSON output`);
         }
         const responseData = await res.json();
         const ohlcvList = responseData?.data?.attributes?.ohlcv_list;
@@ -2258,7 +2259,10 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
         
         if (!data) {
           const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${details.address}`);
-          if (res.ok) data = await res.json();
+          const contentType = res.headers.get("content-type") || "";
+          if (res.ok && contentType.includes("application/json")) {
+            data = await res.json();
+          }
         }
         
         if (data && data.pairs && active) {
@@ -2488,8 +2492,9 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
           })
         });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error ${response.status}`);
+        const contentType = response.headers.get("content-type") || "";
+        if (!response.ok || !contentType.includes("application/json")) {
+          throw new Error(`HTTP error ${response.status} or returned non-JSON response`);
         }
 
         const data = await response.json();
@@ -3915,7 +3920,8 @@ export default function App() {
     setSmartMoneyError(null);
     try {
       const res = await fetch('/api/proxy/coingecko/markets');
-      if (!res.ok) throw new Error('CoinGecko volume fetch failed');
+      const contentType = res.headers.get("content-type") || "";
+      if (!res.ok || !contentType.includes("application/json")) throw new Error('CoinGecko volume fetch failed or returned invalid response');
       const data = await res.json();
       if (Array.isArray(data)) {
         setSmartMoneyCoins(data);
@@ -3934,9 +3940,14 @@ export default function App() {
   const fetchSolPriceData = async () => {
     try {
       const res = await fetch('/api/proxy/coingecko/simple-solana');
-      const data = await res.json();
-      if (data?.solana?.usd) {
-        setSolPrice(data.solana.usd);
+      const contentType = res.headers.get("content-type") || "";
+      if (res.ok && contentType.includes("application/json")) {
+        const data = await res.json();
+        if (data?.solana?.usd) {
+          setSolPrice(data.solana.usd);
+        }
+      } else {
+        throw new Error("Invalid response or non-JSON content for SOL simple-solana");
       }
     } catch (err) {
       console.error(err);
@@ -4158,7 +4169,8 @@ export default function App() {
       // 2. Secondary path: Direct browser fetch if proxy fails for any reason
       if (!data) {
         const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
-        if (res.ok) {
+        const contentType = res.headers.get("content-type") || "";
+        if (res.ok && contentType.includes("application/json")) {
           data = await res.json();
         }
       }
@@ -5948,8 +5960,8 @@ export default function App() {
       <main className="flex-1 min-h-screen pb-12 w-full max-w-full overflow-x-hidden relative z-10 flex flex-col">
         
         {/* TOP METRICS & CONSOLE STATS BAR */}
-        <header className="h-16 border-b border-cyber-border bg-[#030308]/80 backdrop-blur-md flex items-center justify-between px-4 sm:px-6 md:px-10 z-20">
-          <div className="flex items-center gap-3">
+        <header className="h-16 border-b border-cyber-border bg-[#030308]/80 backdrop-blur-md flex items-center justify-between px-2.5 sm:px-6 md:px-10 z-20">
+          <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={() => {
                 setActiveModuleId('token_analyzer');
@@ -5957,9 +5969,10 @@ export default function App() {
                 setCurrentResult(null);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className="flex items-center gap-2 hover:opacity-85 transition-all text-left bg-transparent border-0 p-0 m-0 outline-none cursor-pointer"
+              className="flex items-center justify-center hover:opacity-85 transition-all bg-transparent border-0 p-0 m-0 outline-none cursor-pointer"
+              title="Reset Workspace"
             >
-              <div className="w-7 h-7 rounded overflow-hidden border border-cyber-green flex items-center justify-center bg-cyber-card shrink-0 animate-pulse">
+              <div className="w-8 h-8 rounded overflow-hidden border border-cyber-green flex items-center justify-center bg-cyber-card shrink-0 animate-pulse">
                 <img
                   src="https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg"
                   alt="SURCHI Logo"
@@ -5967,27 +5980,66 @@ export default function App() {
                   referrerPolicy="no-referrer"
                 />
               </div>
-              <h1 className="text-sm font-black text-[#ffffff] tracking-wider uppercase font-display select-none">SURCHI</h1>
             </button>
-
-            <span className="hidden md:inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-cyber-card-light text-slate-300 text-[10px] font-mono border border-cyber-border">
-              OPERATING PROTOCOL: <strong className="text-cyber-neon ml-1">v2.5-ACTIVE</strong>
-            </span>
           </div>
 
-          <div className="flex items-center gap-2 sm:gap-4 font-mono text-[10px] text-slate-400">
-            <span className="hidden xl:inline">LIVE QUANTUM STREAM: <strong className="text-[#ffffff]">SECURE</strong></span>
-            <div className="hidden xs:flex items-center gap-1.5">
+          {/* Analyze Token Contract Search Bar in Middle */}
+          <div className="flex-1 max-w-[240px] xs:max-w-[340px] sm:max-w-[460px] md:max-w-[550px] lg:max-w-[650px] mx-1 sm:mx-4">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const tk = (formInputs.token || '').trim();
+                if (tk) {
+                  handleRunAnalysis(e);
+                }
+              }}
+              className="relative flex items-center w-full"
+            >
+              <Icons.Search className="w-3.5 h-3.5 text-cyber-cyan absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5px]" />
+              <input
+                type="text"
+                value={formInputs.token || ''}
+                onChange={(e) => setFormInputs(prev => ({ ...prev, token: e.target.value }))}
+                placeholder="Search token contract..."
+                className="w-full h-8 bg-[#020207] border-2 border-slate-300 hover:border-white focus:border-cyber-cyan rounded-lg pl-9 pr-14 text-[11px] sm:text-xs font-bold tracking-wide font-mono text-white transition-all duration-300 focus:outline-none focus:shadow-[0_0_12px_rgba(0,229,255,0.25)] placeholder:text-slate-400 placeholder:font-bold"
+              />
+              <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                {formInputs.token && (
+                  <button
+                    type="button"
+                    onClick={() => setFormInputs(prev => ({ ...prev, token: '' }))}
+                    className="text-slate-500 hover:text-white transition-colors p-1 flex items-center justify-center"
+                    title="Clear"
+                  >
+                    <Icons.X className="w-3 h-3" />
+                  </button>
+                )}
+                <button
+                  type="submit"
+                  className="w-5.5 h-5.5 bg-cyber-cyan/15 hover:bg-cyber-cyan text-cyber-cyan hover:text-[#020207] transition-all rounded flex items-center justify-center border border-cyber-cyan/30"
+                  title="Search & Analyze"
+                >
+                  <Icons.Search className="w-3 h-3 stroke-[2.5px]" />
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div className="flex items-center gap-1 sm:gap-3 shrink-0">
+            <span className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 rounded bg-cyber-card-light text-slate-300 text-[9px] font-mono border border-cyber-border/80">
+              PROTOCOL: <strong className="text-cyber-neon ml-0.5">v2.5-ACTIVE</strong>
+            </span>
+            <div className="hidden sm:flex items-center gap-1.5 font-mono text-[9px] text-slate-400">
               <div className="w-1.5 h-1.5 rounded-full bg-cyber-neon animate-pulse"></div>
-              <span className="text-[#ffffff] uppercase font-bold text-[8px] sm:text-[9px] tracking-wider">SECURE GRID ONLINE</span>
+              <span className="text-[#ffffff] uppercase font-bold tracking-wider">SECURE GRID</span>
             </div>
 
             <button
               onClick={() => setIsMenuOpen(true)}
-              className="p-1.5 sm:p-2 ml-1 hover:bg-[#1a1c38] text-cyber-cyan hover:text-cyber-neon border border-cyber-border/80 hover:border-cyber-cyan/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 select-none"
+              className="p-1.5 sm:p-2 ml-1 hover:bg-[#1a1c38] text-cyber-cyan hover:text-cyber-neon border border-cyber-border/80 hover:border-cyber-cyan/30 rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 select-none shrink-0"
               title="Open Workspace Terminal Drawer"
             >
-              <Icons.Menu className="w-5 h-5 text-cyber-cyan" />
+              <Icons.Menu className="w-4 h-4 text-cyber-cyan" />
               <span className="hidden sm:inline text-xs font-mono tracking-widest uppercase">MENU</span>
             </button>
           </div>
@@ -6406,160 +6458,36 @@ export default function App() {
                       <div className="-mt-3.5 sm:-mt-5">
                         <SurchiLiveTicker onSelectCoin={handleSelectTrendingToken} themeMode={themeMode} />
                       </div>
-                      {/* Left Block: Search fields and Loading states */}
-                      <div className="w-full space-y-4">
-                        {/* POLYMORPHIC PARAMETER GENERATOR FORM CARD */}
-                        <section className={`rounded-xl border p-3.5 sm:p-4.5 shadow-2xl relative overflow-hidden ${
-                          themeMode === 'light'
-                            ? 'bg-white border-slate-200 shadow-slate-200/55'
-                            : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
-                        }`}>
-                          {/* Ambient Corner Glow grids */}
-                          {themeMode !== 'light' ? (
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full animate-pulse"></div>
-                          ) : (
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
+                      {/* Surchi Live Ticker & Loading states / Ledger board */}
+                      {(isFetchingTokenDetails || liveTokenInfo) && (
+                        <div className="w-full space-y-4 animate-fade-in">
+                          {isFetchingTokenDetails && (
+                            <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
+                              <div className="flex items-center gap-3">
+                                <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
+                                <div>
+                                  <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
+                                  <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
+                                </div>
+                              </div>
+                              <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
+                            </div>
                           )}
-                          
-                          <form onSubmit={handleRunAnalysis} className="space-y-4">
-                            <div className="grid grid-cols-1 gap-4">
-                              {activeModule.inputs.map(input => (
-                                <div key={input.key} className="space-y-1.5 text-left">
-                                  <label className={`block text-xs font-bold uppercase tracking-wider font-mono ${
-                                    themeMode === 'light' ? 'text-slate-700' : 'text-slate-300'
-                                  }`}>
-                                    {input.label}
-                                  </label>
 
-                                  {input.type === 'text' && (
-                                    <>
-                                      <input
-                                        type="text"
-                                        required
-                                        value={formInputs[input.key] || ''}
-                                        onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                        placeholder={input.placeholder}
-                                        className={`w-full border rounded-lg px-3.5 py-2 text-xs font-mono transition-all ${
-                                          themeMode === 'light'
-                                            ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
-                                            : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
-                                        }`}
-                                      />
-                                      {activeModule.id === 'smart_money_tracker' && input.key === 'wallet' && detectedNetwork === 'evm' && (
-                                        <div className="mt-3 p-3 rounded-lg border flex flex-col gap-2 text-left animate-fade-in font-mono bg-[#00e5ff]/5 border-[#00e5ff]/20">
-                                          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider flex items-center gap-1.5">
-                                            <Icons.Network className="w-3.5 h-3.5 text-[#00e5ff]" /> Select EVM Network Segment:
-                                          </span>
-                                          <div className="flex flex-wrap gap-2 pt-0.5">
-                                            {(['ethereum', 'base', 'arbitrum', 'optimism', 'polygon'] as const).map(subnet => (
-                                              <button
-                                                key={subnet}
-                                                type="button"
-                                                onClick={() => {
-                                                  setSelectedEvmSubnet(subnet);
-                                                }}
-                                                className={`px-3 py-1.5 rounded text-[10px] font-extrabold border transition-all cursor-pointer ${
-                                                  selectedEvmSubnet === subnet
-                                                    ? themeMode === 'light'
-                                                      ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm'
-                                                      : 'bg-[#00e5ff] border-[#00e5ff] text-[#04040a] shadow-[0_0_10px_rgba(0,229,255,0.3)]'
-                                                    : themeMode === 'light'
-                                                      ? 'bg-white border-slate-200 text-slate-650 hover:bg-slate-50'
-                                                      : 'bg-[#03030f]/60 border-cyber-border text-slate-400 hover:text-white'
-                                                }`}
-                                              >
-                                                {subnet.toUpperCase()}
-                                              </button>
-                                            ))}
-                                          </div>
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
-
-                                  {input.type === 'textarea' && (
-                                    <textarea
-                                      required
-                                      rows={6}
-                                      value={formInputs[input.key] || ''}
-                                      onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                      placeholder={input.placeholder}
-                                      className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all resize-y ${
-                                        themeMode === 'light'
-                                          ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white placeholder:text-slate-400'
-                                          : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)] placeholder:text-slate-600'
-                                      }`}
-                                    />
-                                  )}
-
-                                  {input.type === 'select' && (
-                                    <select
-                                      value={formInputs[input.key] || ''}
-                                      onChange={(e) => setFormInputs(prev => ({ ...prev, [input.key]: e.target.value }))}
-                                      className={`w-full border rounded-lg px-4 py-3 text-xs font-mono transition-all ${
-                                        themeMode === 'light'
-                                          ? 'bg-slate-50 border-slate-200 text-slate-800 focus:outline-none focus:border-indigo-500'
-                                          : 'bg-[#03030a] border-cyber-border text-white focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_10px_rgba(0,229,255,0.15)]'
-                                      }`}
-                                    >
-                                      {input.options?.map(opt => (
-                                        <option key={opt.value} value={opt.value} className={themeMode === 'light' ? 'bg-white text-slate-800' : 'bg-[#0b0b1a] text-white'}>
-                                          {opt.label}
-                                        </option>
-                                      ))}
-                                    </select>
-                                  )}
-                                </div>
-                              ))}
+                          {liveTokenInfo && !isFetchingTokenDetails && (
+                            <div className="space-y-2 text-left animate-fade-in">
+                              <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
+                                <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
+                                <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
+                              </header>
+                              <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
                             </div>
+                          )}
+                        </div>
+                      )}
 
-                            {/* Submit triggers */}
-                            <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
-                              <button type="submit" className="hidden" />
-                              {(loading || isFetchingTokenDetails) && (
-                                <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
-                                  themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
-                                  }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full inline-block animate-ping ${
-                                    themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-neon'
-                                  }`}></span> quantum ledger scanning active
-                                </span>
-                              )}
-                            </div>
-                          </form>
-                        </section>
-
-                        {/* Real-time Address Detect Loading & Ledger Board */}
-                        {activeModuleId === 'token_analyzer' && !currentResult && (isFetchingTokenDetails || liveTokenInfo) && (
-                          <div className="space-y-4">
-                            {isFetchingTokenDetails && (
-                              <div className="p-4 rounded-xl border border-cyber-cyan/30 bg-[#060613] flex items-center justify-between gap-3 text-left animate-pulse">
-                                <div className="flex items-center gap-3">
-                                  <Icons.Loader2 className="w-5 h-5 text-cyber-cyan animate-spin" />
-                                  <div>
-                                    <span className="text-xs font-bold text-cyber-cyan font-mono block uppercase">● DETECTED CONTRACT ADDRESS</span>
-                                    <p className="text-[10px] text-slate-400 font-mono">Syncing directly with blockchain indexers and live Dex pools...</p>
-                                  </div>
-                                </div>
-                                <span className="text-[9px] font-mono text-cyber-cyan/80 font-bold uppercase tracking-wider">MAINNET ACTIVE</span>
-                              </div>
-                            )}
-
-                            {liveTokenInfo && !isFetchingTokenDetails && (
-                              <div className="space-y-2 text-left animate-fade-in">
-                                <header className="flex items-center gap-1.5 px-3 py-1 bg-cyber-cyan/5 w-max rounded border border-cyber-cyan/25">
-                                  <span className={`w-1.5 h-1.5 rounded-full ${themeAccent === 'white' ? 'bg-white' : 'bg-[#00ff88]'} animate-ping`}></span>
-                                  <span className={`text-[10px] ${themeAccent === 'white' ? 'text-white' : 'text-[#00ff88]'} font-mono font-bold uppercase tracking-wider`}>Live Mainnet Snapshot Connected</span>
-                                </header>
-                                <LiveTokenLedgerCard details={liveTokenInfo} themeAccent={themeAccent} themeMode={themeMode} onClose={() => setLiveTokenInfo(null)} />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Right Block: SurchiTokenMetrics Card and Charts */}
-                      <div className="w-full space-y-4">
+                      {/* Right Block: SurchiTokenMetrics Card with embedded What Is Surchi button */}
+                      <div className="w-full max-w-[320px] mx-auto">
                         <SurchiTokenMetrics 
                           themeMode={themeMode}
                           onPriceClick={() => {
@@ -6574,6 +6502,7 @@ export default function App() {
                               isListed: metrics.isListed,
                             });
                           }}
+                          onWhatIsSurchiClick={() => setShowSurchiIntroModal(true)}
                           hideSocials={true}
                         />
                       </div>
@@ -7032,22 +6961,6 @@ export default function App() {
             </section>
           ) : isHomePage ? (
             <div id="walkthrough-section" className="space-y-6 w-full max-w-7xl lg:max-w-[1700px] mx-auto">
-              {/* ENTRY PORTALS FOR EXPLORATION */}
-              <div className="flex justify-center items-center gap-4 pt-2">
-                <button
-                  onClick={() => setShowSurchiIntroModal(true)}
-                  className={`inline-flex items-center gap-1.5 px-4.5 py-2 rounded-lg text-[10px] sm:text-xs font-mono font-black tracking-widest uppercase hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer select-none border ${
-                    themeMode === 'light'
-                      ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7] border-purple-200 shadow-sm shadow-purple-100/40'
-                      : 'text-[#a855f7] hover:text-[#c084fc] bg-[#120721] hover:bg-[#1e0a36] border border-[#a855f7]/45 hover:border-[#c084fc] shadow-[0_0_18px_rgba(168,85,247,0.15)] hover:shadow-[0_0_25px_rgba(168,85,247,0.35)]'
-                  }`}
-                >
-                  <Icons.Cpu className={`w-3.5 h-3.5 shrink-0 animate-pulse ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
-                  <span>WHAT IS SURCHI?</span>
-                  <Icons.ChevronRight className={`w-3.5 h-3.5 shrink-0 ${themeMode === 'light' ? 'text-purple-600' : 'text-[#a855f7]'}`} />
-                </button>
-              </div>
-
               {/* LIVE SOLANA TRENDING ANALYSIS SECTION */}
               <SolanaTrendingTokens themeMode={themeMode} onSelectToken={handleSelectTrendingToken} />
             </div>

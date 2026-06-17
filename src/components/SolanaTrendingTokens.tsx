@@ -205,8 +205,9 @@ const TokenNameCell: React.FC<{
           promise = (async () => {
             const url = `https://api.dexscreener.com/latest/dex/tokens/${address}`;
             const res = await fetch(url);
-            if (!res.ok) {
-              throw new Error(`Metadata HTTP error ${res.status}`);
+            const contentType = res.headers.get("content-type") || "";
+            if (!res.ok || !contentType.includes("application/json")) {
+              throw new Error(`Metadata HTTP error ${res.status} or invalid non-JSON output`);
             }
             const data = await res.json();
             const pair = data && Array.isArray(data.pairs) && data.pairs[0];
