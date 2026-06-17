@@ -208,7 +208,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
   const duplicatedItems = [...INITIAL_COINS, ...INITIAL_COINS];
 
   return (
-    <div className={`w-full relative overflow-hidden select-none flex h-[50px] items-center border-t border-b transition-all duration-300 ${
+    <div className={`w-full relative overflow-hidden select-none flex h-[40px] items-center border-t border-b transition-all duration-300 ${
       themeMode === 'light' 
         ? 'bg-white border-gray-200 shadow-3xs text-gray-800' 
         : 'bg-[#030308]/60 border-cyber-border text-slate-300'

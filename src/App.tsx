@@ -1694,7 +1694,7 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             
             {/* Real-time Floating HUD */}
             {activeHUD && (
-              <div className={`absolute top-2 left-3 z-20 flex flex-wrap items-center gap-x-2 text-[9.5px] font-mono pointer-events-none shadow-lg px-2.5 py-1 rounded backdrop-blur-md border ${
+              <div className={`absolute top-1.5 left-2 z-20 flex flex-wrap items-center gap-x-1.5 text-[8.5px] font-mono pointer-events-none shadow-md px-2 py-0.5 rounded backdrop-blur-md border ${
                 isLight 
                   ? 'text-slate-650 bg-white/90 border-slate-200/80 shadow-slate-100/30' 
                   : 'text-slate-400 bg-black/60 border-white/5'
@@ -7463,14 +7463,14 @@ export default function App() {
 
       {/* Dynamic Coming Soon Notification Toast */}
       {comingSoonToast?.show && (
-        <div className={`fixed bottom-24 right-6 z-[100] max-w-sm w-[90vw] rounded-xl overflow-hidden animate-slide-up sm:w-80 border-2 ${
+        <div className={`fixed bottom-24 right-6 z-[100] max-w-xs w-[85vw] rounded-xl overflow-hidden animate-slide-up sm:w-72 border-2 ${
           themeMode === 'light'
             ? 'bg-white border-indigo-500 shadow-[0_10px_35px_rgba(79,70,229,0.15)] text-slate-900'
             : 'bg-[#0c0c1e] border-cyber-cyan/60 shadow-[0_8px_32px_rgba(0,229,255,0.2)] text-white'
         }`}>
           <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-cyber-cyan/5 to-transparent pointer-events-none rounded-bl-full"></div>
           
-          <div className="p-4 space-y-3 relative z-10 text-left">
+          <div className="p-3 space-y-2.5 relative z-10 text-left">
             <div className="flex items-center justify-between">
               <span className={`text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 leading-none ${
                 themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-cyan'
@@ -7540,13 +7540,13 @@ export default function App() {
 
       {/* Compliance Success Success Notification Toast */}
       {complianceSuccessToast && (
-        <div className={`fixed bottom-24 right-6 z-[99999] max-w-sm w-[90vw] rounded-xl overflow-hidden animate-slide-up sm:w-80 border-2 ${
+        <div className={`fixed bottom-24 right-6 z-[99999] max-w-xs w-[85vw] rounded-xl overflow-hidden animate-slide-up sm:w-72 border-2 ${
           themeMode === 'light'
             ? 'bg-emerald-50 border-emerald-500 shadow-[0_10px_35px_rgba(16,185,129,0.15)] text-slate-800'
             : 'bg-[#041a10]/95 border-emerald-500/60 shadow-[0_8px_32px_rgba(16,185,129,0.2)] text-white'
         }`}>
           <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-500/5 to-transparent pointer-events-none rounded-bl-full"></div>
-          <div className="p-4 space-y-2 relative z-10 text-left">
+          <div className="p-3 space-y-1.5 relative z-10 text-left">
             <div className="flex items-center justify-between">
               <span className={`text-[10px] font-mono font-bold uppercase tracking-wider flex items-center gap-1.5 leading-none ${
                 themeMode === 'light' ? 'text-emerald-700' : 'text-[#00ff88]'
