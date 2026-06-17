@@ -7273,7 +7273,7 @@ export default function App() {
       {/* SECURE DONATION PROTOCOL MODAL */}
       {showDonateModal && (
         <div className="fixed inset-0 bg-[#020207]/92 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 z-[100] animate-fade-in select-text">
-          <div className="bg-[#0b0b1a] border border-[#ff4b82]/40 w-full max-w-sm rounded-xl overflow-hidden flex flex-col shadow-[0_0_50px_rgba(255,75,130,0.15)] relative max-h-[92vh] overflow-y-auto">
+          <div className="bg-[#0b0b1a] border border-[#ff4b82]/40 w-full max-w-sm sm:max-w-[420px] rounded-xl overflow-hidden flex flex-col shadow-[0_0_50px_rgba(255,75,130,0.15)] relative max-h-[92vh] overflow-y-auto">
             
             {/* Corner ambient graphics */}
             <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-[#ff4b82]/10 to-transparent pointer-events-none rounded-bl-full animate-pulse-safe"></div>
@@ -7309,7 +7309,7 @@ export default function App() {
               </div>
 
               {/* Description & Only send warning */}
-              <div className="space-y-2">
+              <div className="space-y-2 select-none">
                 <h4 className="text-xs sm:text-sm font-bold text-white font-mono uppercase tracking-wide">SURCHI REVENUE SUPPORT POOL</h4>
                 <p className="text-[11px] text-slate-400 leading-normal font-sans px-1">
                   Scanning this QR code or copying the address below lets you contribute straight to the Surchi development pipeline.
@@ -7322,10 +7322,10 @@ export default function App() {
               </div>
 
               {/* Solana Address copy form block */}
-              <div className="w-full space-y-1.5 text-left">
-                <span className="text-[8px] font-mono text-slate-500 uppercase tracking-wider block">SOLANA DESTINATION ADDRESS</span>
-                <div className="flex items-center gap-1.5 p-1.5 bg-[#050511] border border-cyber-border rounded-lg">
-                  <span className="flex-1 font-mono text-[10px] text-slate-300 break-all select-all pl-1 leading-normal">
+              <div className="w-full space-y-2 text-center flex flex-col items-center justify-center">
+                <span className="text-[8px] font-mono text-slate-400 uppercase tracking-wider block text-center">$SURCHI DESTINATION ADDRESS</span>
+                <div className="flex items-center gap-1.5 p-1.5 bg-transparent border border-cyber-border rounded-lg w-full">
+                  <span className="flex-1 font-mono text-[10px] text-white font-bold break-all select-all pl-1 leading-normal text-left sm:text-center" style={{ color: '#FFFFFF' }}>
                     8bnoVQyr63PG9vPACnVT3bR5dhnX8QEF4tf33TqNHRMn
                   </span>
                   <button
@@ -7334,18 +7334,19 @@ export default function App() {
                       setCopiedDonateAddress(true);
                       setTimeout(() => setCopiedDonateAddress(false), 2000);
                     }}
-                    className="p-1.5 bg-[#101026] hover:bg-[#1f1f45] text-cyber-cyan hover:text-cyber-neon border border-cyber-border rounded transition-all shrink-0 cursor-pointer text-[10px] flex items-center gap-1 font-mono"
+                    className="p-1.5 bg-[#ff4b82] hover:bg-[#ff6c9a] text-white hover:text-white border border-[#ff4b82]/40 rounded transition-all shrink-0 cursor-pointer text-[10px] flex items-center gap-1 font-mono font-bold"
+                    style={{ color: '#FFFFFF' }}
                     title="Copy wallet address to clipboard"
                   >
                     {copiedDonateAddress ? (
                       <>
-                        <Icons.Check className="w-3 text-cyber-neon" />
-                        <span className="text-[8px] text-cyber-neon uppercase tracking-wider font-bold">COPIED</span>
+                        <Icons.Check className="w-3 text-white" style={{ stroke: '#FFFFFF', color: '#FFFFFF' }} />
+                        <span className="text-[8px] text-white uppercase tracking-wider font-bold" style={{ color: '#FFFFFF' }}>COPIED</span>
                       </>
                     ) : (
                       <>
-                        <Icons.Copy className="w-3" />
-                        <span className="text-[8px] uppercase tracking-wider font-bold">COPY</span>
+                        <Icons.Copy className="w-3 text-white" style={{ stroke: '#FFFFFF', color: '#FFFFFF' }} />
+                        <span className="text-[8px] text-white uppercase tracking-wider font-bold" style={{ color: '#FFFFFF' }}>COPY</span>
                       </>
                     )}
                   </button>

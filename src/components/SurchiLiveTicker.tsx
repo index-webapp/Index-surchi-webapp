@@ -83,13 +83,13 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
     try {
       const newPrices: Record<string, { price: number; change: number; image?: string }> = {};
 
-      // 1. Try CoinGecko Public Markets API to fetch price + 24h change + emblem image URL
+      // 1. Try our direct backend proxy ticker endpoint as the primary, high-performance source
       try {
-        const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,ripple,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polkadot,matic-network,uniswap,litecoin,cosmos,stellar,internet-computer,filecoin,aptos&order=market_cap_desc&sparkline=false&price_change_percentage=24h');
-        if (cgRes.ok) {
-          const data = await cgRes.json();
-          if (Array.isArray(data)) {
-            data.forEach((coin: any) => {
+        const bkRes = await fetch('/api/proxy/tickerCoins');
+        if (bkRes.ok) {
+          const bkData = await bkRes.json();
+          if (bkData && Array.isArray(bkData.coins)) {
+            bkData.coins.forEach((coin: any) => {
               if (coin && coin.id) {
                 newPrices[coin.id] = {
                   price: coin.current_price,
@@ -100,80 +100,80 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
             });
           }
         } else {
-          throw new Error('CoinGecko API returned error status');
+          throw new Error('Local tickerCoins proxy offline or returned status error');
         }
-      } catch (err) {
-        // Fallback to CryptoCompare
+      } catch (bkErr) {
+        console.warn("Local tickerCoins proxy failed or offline, falling back directly to public endpoints:", bkErr);
+        // Fallback: Try CoinGecko Public Markets API
         try {
-          const ccRes = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,SOL,XRP,USDC,ADA,AVAX,DOGE,TRX,LINK,DOT,MATIC,UNI,LTC,ATOM,XLM,ICP,FIL,APT&tsyms=USD');
-          if (ccRes.ok) {
-            const data = await ccRes.json();
-            if (data && data.RAW) {
-              INITIAL_COINS.forEach((coin) => {
-                if (coin.id === 'surchi') return;
-                const sym = coin.symbol.toUpperCase();
-                const rawCoin = data.RAW[sym]?.USD || data.RAW[sym]?.usd;
-                if (rawCoin && typeof rawCoin.PRICE === 'number') {
+          const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,ripple,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polkadot,matic-network,uniswap,litecoin,cosmos,stellar,internet-computer,filecoin,aptos&order=market_cap_desc&sparkline=false&price_change_percentage=24h');
+          if (cgRes.ok) {
+            const data = await cgRes.json();
+            if (Array.isArray(data)) {
+              data.forEach((coin: any) => {
+                if (coin && coin.id) {
                   newPrices[coin.id] = {
-                    price: rawCoin.PRICE,
-                    change: rawCoin.CHANGEPCT24HOUR || 0,
-                    image: rawCoin.IMAGEURL ? `https://www.cryptocompare.com${rawCoin.IMAGEURL}` : undefined
+                    price: coin.current_price,
+                    change: coin.price_change_percentage_24h || 0,
+                    image: coin.image
                   };
                 }
               });
             }
+          } else {
+            throw new Error('CoinGecko API returned error status');
           }
-        } catch (ccErr) {
-          // Silent fallback
+        } catch (cgErr) {
+          // Fallback to CryptoCompare
+          try {
+            const ccRes = await fetch('https://min-api.cryptocompare.com/data/pricemultifull?fsyms=BTC,ETH,BNB,SOL,XRP,USDC,ADA,AVAX,DOGE,TRX,LINK,DOT,MATIC,UNI,LTC,ATOM,XLM,ICP,FIL,APT&tsyms=USD');
+            if (ccRes.ok) {
+              const data = await ccRes.json();
+              if (data && data.RAW) {
+                INITIAL_COINS.forEach((coin) => {
+                  if (coin.id === 'surchi') return;
+                  const sym = coin.symbol.toUpperCase();
+                  const rawCoin = data.RAW[sym]?.USD || data.RAW[sym]?.usd;
+                  if (rawCoin && typeof rawCoin.PRICE === 'number') {
+                    newPrices[coin.id] = {
+                      price: rawCoin.PRICE,
+                      change: rawCoin.CHANGEPCT24HOUR || 0,
+                      image: rawCoin.IMAGEURL ? `https://www.cryptocompare.com${rawCoin.IMAGEURL}` : undefined
+                    };
+                  }
+                });
+              }
+            }
+          } catch (ccErr) {
+            // Silent fallback
+          }
         }
       }
 
-      // 2. Fetch Native SURCHI price from DexScreener search
-      try {
-        const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
-        if (sRes.ok) {
-          const data = await sRes.json();
-          if (data && data.pairs && data.pairs.length > 0) {
-            const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
-            if (filtered.length > 0) {
-              filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
-              const bestPair = filtered[0];
-              newPrices['surchi'] = {
-                price: parseFloat(bestPair.priceUsd || '0.0215'),
-                change: parseFloat(bestPair.priceChange?.h24 || '3.42')
-              };
-            }
-          }
-        }
-        if (!newPrices['surchi']) {
-          // Support backup fetch of SURCHI via proxy on backend
-          const bkRes = await fetch('/api/proxy/tickerCoins');
-          if (bkRes.ok) {
-            const bkData = await bkRes.json();
-            const bkSurchi = bkData?.coins?.find((c: any) => c.id === 'surchi');
-            if (bkSurchi) {
-              newPrices['surchi'] = {
-                price: bkSurchi.current_price || 0.0215,
-                change: bkSurchi.price_change_percentage_24h || 3.42
-              };
-            }
-          }
-        }
-      } catch (sErr) {
+      // 2. Resolve SURCHI price if not present
+      if (!newPrices['surchi']) {
         try {
-          const bkRes = await fetch('/api/proxy/tickerCoins');
-          if (bkRes.ok) {
-            const bkData = await bkRes.json();
-            const bkSurchi = bkData?.coins?.find((c: any) => c.id === 'surchi');
-            if (bkSurchi) {
-              newPrices['surchi'] = {
-                price: bkSurchi.current_price || 0.0215,
-                change: bkSurchi.price_change_percentage_24h || 3.42
-              };
+          const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI');
+          if (sRes.ok) {
+            const data = await sRes.json();
+            if (data && data.pairs && data.pairs.length > 0) {
+              const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
+              if (filtered.length > 0) {
+                filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+                const bestPair = filtered[0];
+                newPrices['surchi'] = {
+                  price: parseFloat(bestPair.priceUsd || '0.0215'),
+                  change: parseFloat(bestPair.priceChange?.h24 || '3.42')
+                };
+              }
             }
           }
-        } catch (bkErr) {
-          // Silent
+        } catch (sErr) {
+          // Standby baseline
+          newPrices['surchi'] = {
+            price: 0.0215,
+            change: 3.42
+          };
         }
       }
 
