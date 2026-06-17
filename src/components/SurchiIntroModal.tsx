@@ -927,18 +927,6 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
                   >
                     <Icons.Globe className="w-4 h-4" />
                   </a>
-
-                  <a 
-                    href="mailto:Surchiecosystem@gmail.com"
-                    title="Email Support"
-                    className={`w-10 h-10 border rounded-lg flex items-center justify-center transition-all cursor-pointer ${
-                      isLight
-                        ? 'border-slate-200 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-indigo-650 hover:text-indigo-850 shadow-sm'
-                        : 'border-cyber-border hover:border-slate-500 bg-[#050512] hover:bg-[#090924] text-cyber-cyan hover:text-white'
-                    }`}
-                  >
-                    <Icons.Mail className="w-4 h-4" />
-                  </a>
                 </div>
               </div>
             </div>

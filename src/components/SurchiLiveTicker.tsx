@@ -77,23 +77,24 @@ const INITIAL_COINS: TickerItem[] = [
 
 export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiveTickerProps) {
   // Initialize prices as null for each coin to render blank spaces initially
-  const [livePrices, setLivePrices] = useState<Record<string, { price: number; change: number } | null>>({});
+  const [livePrices, setLivePrices] = useState<Record<string, { price: number; change: number; image?: string } | null>>({});
 
   const fetchTickerData = async () => {
     try {
-      const newPrices: Record<string, { price: number; change: number }> = {};
+      const newPrices: Record<string, { price: number; change: number; image?: string }> = {};
 
-      // 1. Try CoinGecko Public API
+      // 1. Try CoinGecko Public Markets API to fetch price + 24h change + emblem image URL
       try {
-        const cgRes = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,binancecoin,solana,ripple,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polkadot,matic-network,uniswap,litecoin,cosmos,stellar,internet-computer,filecoin,aptos&vs_currencies=usd&include_24hr_change=true');
+        const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,ripple,usd-coin,cardano,avalanche-2,dogecoin,tron,chainlink,polkadot,matic-network,uniswap,litecoin,cosmos,stellar,internet-computer,filecoin,aptos&order=market_cap_desc&sparkline=false&price_change_percentage=24h');
         if (cgRes.ok) {
           const data = await cgRes.json();
-          if (data && typeof data === 'object') {
-            Object.keys(data).forEach((id) => {
-              if (data[id] && typeof data[id].usd === 'number') {
-                newPrices[id] = {
-                  price: data[id].usd,
-                  change: data[id].usd_24h_change || 0
+          if (Array.isArray(data)) {
+            data.forEach((coin: any) => {
+              if (coin && coin.id) {
+                newPrices[coin.id] = {
+                  price: coin.current_price,
+                  change: coin.price_change_percentage_24h || 0,
+                  image: coin.image
                 };
               }
             });
@@ -115,7 +116,8 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                 if (rawCoin && typeof rawCoin.PRICE === 'number') {
                   newPrices[coin.id] = {
                     price: rawCoin.PRICE,
-                    change: rawCoin.CHANGEPCT24HOUR || 0
+                    change: rawCoin.CHANGEPCT24HOUR || 0,
+                    image: rawCoin.IMAGEURL ? `https://www.cryptocompare.com${rawCoin.IMAGEURL}` : undefined
                   };
                 }
               });
@@ -228,8 +230,8 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
           const liveData = livePrices[item.id];
           const hasData = !!liveData;
 
-          const price = hasData ? liveData.price : 0;
-          const changePct = hasData ? liveData.change : 0;
+          const price = (hasData && liveData?.price !== null && liveData?.price !== undefined) ? liveData.price : item.current_price;
+          const changePct = (hasData && liveData?.change !== null && liveData?.change !== undefined) ? liveData.change : item.price_change_percentage_24h;
           const isUp = changePct >= 0;
           const rank = (index % INITIAL_COINS.length) + 1;
 
@@ -265,40 +267,31 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
               <div className="py-1" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 
                 {/* 1. Coin Icon */}
-                <div className={`w-[20px] h-[20px] rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border-[1.5px] relative shadow-sm ${
+                <div className={`w-[26px] h-[26px] rounded-full overflow-hidden flex items-center justify-center shrink-0 bg-gray-100 border-[1.5px] relative shadow-sm ${
                   themeMode === 'light' ? 'border-gray-500' : 'border-cyber-cyan/80'
                 }`}>
                   <img 
-                    src={item.image} 
+                    src={item.isNative ? item.image : (livePrices[item.id]?.image || item.image)} 
                     alt={item.symbol} 
                     referrerPolicy="no-referrer"
                     className="w-full h-full object-cover rounded-full select-none"
-                    onError={(e) => {
-                      e.currentTarget.style.display = 'none';
-                      if (e.currentTarget.nextElementSibling) {
-                        e.currentTarget.nextElementSibling.classList.remove('hidden');
-                      }
-                    }}
                   />
-                  <div className="hidden absolute inset-0 flex items-center justify-center text-[7px] text-gray-500 font-extrabold bg-[#8b5cf6]/20">
-                    {item.symbol.slice(0, 2)}
-                  </div>
                 </div>
 
                 {/* 2. Rank */}
-                <span className={`text-[11px] font-mono font-medium opacity-60 ${
+                <span className={`text-[13px] font-mono font-medium opacity-60 ${
                   themeMode === 'light' ? 'text-gray-500' : 'text-slate-400'
                 }`}>
                   #{rank}
                 </span>
 
                 {/* 3. Ticker */}
-                <span className={`text-[11px] uppercase font-mono font-bold flex items-center gap-0.5 ${
+                <span className={`text-[13px] uppercase font-mono font-bold flex items-center gap-0.5 ${
                   themeMode === 'light' ? 'text-gray-950' : 'text-white'
                 }`}>
                   {item.symbol.toUpperCase()}
                   {item.isNative && (
-                    <span className="bg-cyan-500/20 text-[#00E5FF] text-[6.5px] px-0.5 py-0.1 rounded-xs scale-90 font-sans tracking-wide font-black">
+                    <span className="bg-cyan-500/20 text-[#00E5FF] text-[7.5px] px-0.5 py-0.1 rounded-xs scale-90 font-sans tracking-wide font-black">
                       NATIVE
                     </span>
                   )}
@@ -307,7 +300,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
                 {/* 4. Price */}
                 {hasData ? (
                   <span 
-                    className={`text-[11px] font-mono font-bold tracking-tight ${
+                    className={`text-[13px] font-mono font-bold tracking-tight ${
                       themeMode === 'light' ? 'text-gray-950' : 'text-slate-100'
                     }`}
                     style={{ fontVariantNumeric: 'tabular-nums' }}
@@ -318,13 +311,13 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
 
                 {/* 5. 24h % Change with directional indicator */}
                 {hasData ? (
-                  <span className={`text-[10.5px] font-mono font-bold tracking-tight ${
+                  <span className={`text-[12.5px] font-mono font-bold tracking-tight ${
                     isUp ? 'text-emerald-500' : 'text-rose-500'
                   }`}>
                     {isUp ? `▲ +${displayChange}%` : `▼ -${displayChange}%`}
                   </span>
                 ) : (
-                  <span className={`text-[10.5px] font-mono font-bold tracking-tight ${
+                  <span className={`text-[12.5px] font-mono font-bold tracking-tight ${
                     themeMode === 'light' ? 'text-gray-400' : 'text-slate-500'
                   }`}>
                     —
@@ -333,7 +326,7 @@ export function SurchiLiveTicker({ onSelectCoin, themeMode = 'dark' }: SurchiLiv
               </div>
 
               {/* Ticker Separator */}
-              <span className={`font-light text-[11px] font-mono leading-none select-none ml-1 opacity-20 ${themeMode === 'light' ? 'text-gray-400' : 'text-slate-500'}`}>|</span>
+              <span className={`font-light text-[13px] font-mono leading-none select-none ml-1 opacity-20 ${themeMode === 'light' ? 'text-gray-400' : 'text-slate-500'}`}>|</span>
             </div>
           );
         })}

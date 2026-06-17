@@ -224,7 +224,7 @@ export function SurchiTokenMetrics({ onPriceClick, onMetricsFetched, themeMode, 
                 <h3 className={`text-xs sm:text-sm md:text-base font-black tracking-tight leading-none uppercase truncate ${
                   themeMode === 'light' ? 'text-slate-900' : 'text-white'
                 }`}>
-                  SURCHI
+                  SURCHI COIN
                 </h3>
                 <Icons.CheckCircle2 className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-indigo-500 shrink-0" />
               </div>

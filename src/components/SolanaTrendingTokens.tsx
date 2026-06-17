@@ -482,7 +482,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       ];
       
       const responses = await Promise.allSettled(
-        boostUrls.map(url => fetch(url).then(r => r.ok ? r.json() : []))
+        boostUrls.map(url => fetch(url).then(r => r.ok ? r.json() : []).catch(() => []))
       );
 
       responses.forEach((result) => {

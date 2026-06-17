@@ -109,7 +109,7 @@ export default function SurchiLivePortal({
                 <h3 className={`text-xl md:text-2xl font-black tracking-tight leading-none uppercase ${
                   themeMode === 'light' ? 'text-slate-950' : 'text-white'
                 }`}>
-                  SURCHI
+                  SURCHI COIN
                 </h3>
                 <p className="text-xs font-mono font-bold text-slate-400">
                   $SURCHI
@@ -590,6 +590,29 @@ export default function SurchiLivePortal({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Fair launch parameters clickable button */}
+        <div className="pt-6 border-t border-purple-500/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h5 className={`text-xs font-bold uppercase tracking-wider font-mono ${themeMode === 'light' ? 'text-slate-700' : 'text-purple-300'}`}>
+              Decentralized Architecture Specs
+            </h5>
+            <p className="text-[11px] text-slate-400">Review official distribution blueprints and technical setup of $SURCHI.</p>
+          </div>
+          <a
+            href="https://drive.google.com/file/d/18MOHM8K36sBnZKeCVHVZpy9aL0wJGoKu/view?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl border text-xs font-bold uppercase tracking-widest font-mono transition-all duration-300 shadow-sm whitespace-nowrap cursor-pointer hover:scale-102 ${
+              themeMode === 'light'
+                ? 'bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700 text-white border-transparent'
+                : 'bg-[#10b981]/15 hover:bg-[#10b981]/25 text-[#10b981] border-[#10b981]/20 hover:border-[#10b981]/40'
+            }`}
+          >
+            <Icons.ExternalLink className="w-4 h-4" />
+            Fair Launch Parameters
+          </a>
         </div>
       </div>
 
