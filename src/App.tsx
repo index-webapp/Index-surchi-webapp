@@ -7170,11 +7170,11 @@ export default function App() {
               rel="noopener noreferrer"
               className={`w-full py-3 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 text-xs font-mono font-bold select-none text-center ${
                 themeMode === 'light'
-                  ? 'bg-rose-50 hover:bg-rose-100 text-rose-600 hover:text-rose-800 border border-rose-200 shadow-sm'
-                  : 'bg-[#110d24] hover:bg-[#1a1435] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/32 hover:border-[#ff4b82]/60 shadow-[0_0_15px_rgba(255,75,130,0.06)]'
+                  ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-600 hover:text-emerald-805 border border-emerald-200 shadow-sm'
+                  : 'bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] hover:text-[#34d399] border border-[#10b981]/20 hover:border-[#10b981]/40 shadow-[0_0_15px_rgba(16,185,129,0.1)]'
               } group`}
             >
-              <Icons.Coins className={`w-4 h-4 ${themeMode === 'light' ? 'text-rose-500' : 'text-[#ff4b82]'} group-hover:scale-110 transition-transform duration-250`} />
+              <Icons.Coins className={`w-4 h-4 ${themeMode === 'light' ? 'text-emerald-500' : 'text-[#10b981]'} group-hover:scale-110 transition-transform duration-250`} />
               <span>BUY $SURCHI</span>
               <Icons.ExternalLink className="w-3.5 h-3.5 opacity-70" />
             </a>
