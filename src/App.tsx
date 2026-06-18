@@ -5946,7 +5946,7 @@ export default function App() {
           </div>
 
           {/* Analyze Token Contract Search Bar in Middle */}
-          <div className="flex-1 max-w-[240px] xs:max-w-[340px] sm:max-w-[460px] md:max-w-[550px] lg:max-w-[650px] mx-1 sm:mx-4">
+          <div className="flex-1 max-w-[242px] xs:max-w-[343px] sm:max-w-[465px] md:max-w-[556px] lg:max-w-[657px] mx-1 sm:mx-4">
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -5957,13 +5957,12 @@ export default function App() {
               }}
               className="relative flex items-center w-full"
             >
-              <Icons.Search className="w-3.5 h-3.5 text-cyber-cyan absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5px]" />
               <input
                 type="text"
                 value={formInputs.token || ''}
                 onChange={(e) => setFormInputs(prev => ({ ...prev, token: e.target.value }))}
                 placeholder="Search token contract..."
-                className="w-full h-8 bg-[#020207] border-2 border-slate-300 hover:border-white focus:border-cyber-cyan rounded-lg pl-9 pr-14 text-[11px] sm:text-xs font-bold tracking-wide font-mono text-white transition-all duration-300 focus:outline-none focus:shadow-[0_0_12px_rgba(0,229,255,0.25)] placeholder:text-slate-400 placeholder:font-bold"
+                className="w-full h-8 bg-[#020207] border-2 border-slate-300 hover:border-white focus:border-cyber-cyan rounded-lg pl-3.5 pr-14 text-xs sm:text-[13px] font-bold tracking-wide font-mono text-white transition-all duration-300 focus:outline-none focus:shadow-[0_0_12px_rgba(0,229,255,0.25)] placeholder:text-slate-400 placeholder:font-bold"
               />
               <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {formInputs.token && (
