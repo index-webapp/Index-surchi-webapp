@@ -455,7 +455,7 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
       </div>
 
       {/* DESKTOP INTEGRATED HORIZONTAL VIEW (≥768px) */}
-      <div className="hidden md:flex md:flex-col p-4.5 space-y-4">
+      <div className="hidden md:flex md:flex-col p-4.5 lg:pr-8 space-y-4">
         
         {/* ROW 1: Logo/Identity, Stats, and Chart (with min-height & padding) */}
         <div className="flex items-center justify-between gap-5 min-h-[72px] py-1">
@@ -547,74 +547,99 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
           </div>
 
           {/* Right Block: Chart Area + Three-dot Menu */}
-          <div className="flex items-center gap-3 shrink-0">
-            {/* Chart Area */}
-            <div className={`rounded-xl border p-2 relative h-12 w-44 flex flex-col justify-center items-center overflow-hidden ${
-              themeMode === 'light'
-                ? 'bg-[#fafafc] border-slate-100'
-                : 'bg-[#020306] border-[#8b5cf6]/5'
-            }`}>
-              {/* Grid overlay */}
-              <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-                <div className="w-full h-full grid grid-cols-6 grid-rows-2">
-                  {Array.from({ length: 12 }).map((_, i) => (
-                    <div key={i} className="border-t border-l border-slate-400"></div>
-                  ))}
-                </div>
-              </div>
-
-              {/* SVG Curve */}
-              <div className="absolute inset-x-0 bottom-0 top-3 select-none opacity-80 pointer-events-none">
-                <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                  <defs>
-                    <linearGradient id="photoWaveGradCompactDesktop" x1="0%" y1="0%" x2="0%" y2="100%">
-                      <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.08" />
-                      <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.0" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M0,70 C15,60 25,75 40,78 C55,80 70,45 85,52 C92,54 96,30 100,32 L100,100 L0,100 Z"
-                    fill="url(#photoWaveGradCompactDesktop)"
-                  />
-                  <path
-                    d="M0,70 C15,60 25,75 40,78 C55,80 70,45 85,52 C92,54 96,30 100,32"
-                    fill="none"
-                    stroke="#a855f7"
-                    strokeWidth="1.2"
-                    strokeDasharray="3 2"
-                    strokeLinecap="round"
-                    className="opacity-60"
-                  />
-                  <circle cx="100" cy="32" r="2" fill="#a855f7" />
-                </svg>
-              </div>
-
-              {/* Text Badge overlay */}
-              <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-0.5">
-                <div className="p-0.5 rounded-full bg-purple-500/10 border border-purple-500/10 flex items-center justify-center">
-                  <Icons.TrendingUp className="w-2.5 h-2.5 text-purple-500" />
-                </div>
-                <span className="text-[9px] font-extrabold tracking-wide text-purple-600 dark:text-purple-400 block font-sans leading-none">
-                  Awaiting Exchange Listing
-                </span>
-              </div>
+          <div className="flex items-center lg:items-start gap-4 shrink-0">
+            {/* Menu Indicator Button - placed with order classes to render to the left of the column on lg screens, preventing horizontal overlap */}
+            <div className="order-2 lg:order-1 flex items-center h-12 lg:h-auto lg:pt-1">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onPriceClick) onPriceClick();
+                }}
+                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+                  themeMode === 'light'
+                    ? 'bg-slate-50 border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100'
+                    : 'bg-purple-500/5 border-purple-500/10 text-slate-400 hover:text-white hover:bg-purple-500/15'
+                }`}
+                title="Open Ecosystem Terminal"
+              >
+                <Icons.MoreVertical className="w-4 h-4" />
+              </button>
             </div>
 
-            {/* Menu Indicator Button */}
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                if (onPriceClick) onPriceClick();
-              }}
-              className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all shrink-0 ${
+            {/* Right-aligned information column: contains status badge at the top and WHAT IS SURCHI? button below it on lg screens */}
+            <div className="order-1 lg:order-2 flex flex-col items-end gap-3 lg:gap-[18px]">
+              {/* Chart Area ("Awaiting Exchange Listing" badge) */}
+              <div className={`rounded-xl border p-2 relative h-12 w-44 flex flex-col justify-center items-center overflow-hidden ${
                 themeMode === 'light'
-                  ? 'bg-slate-50 border-slate-100 text-slate-400 hover:text-slate-600 hover:bg-slate-100'
-                  : 'bg-purple-500/5 border-purple-500/10 text-slate-400 hover:text-white hover:bg-purple-500/15'
-              }`}
-              title="Open Ecosystem Terminal"
-            >
-              <Icons.MoreVertical className="w-4 h-4" />
-            </button>
+                  ? 'bg-[#fafafc] border-slate-100'
+                  : 'bg-[#020306] border-[#8b5cf6]/5'
+              }`}>
+                {/* Grid overlay */}
+                <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
+                  <div className="w-full h-full grid grid-cols-6 grid-rows-2">
+                    {Array.from({ length: 12 }).map((_, i) => (
+                      <div key={i} className="border-t border-l border-slate-400"></div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* SVG Curve */}
+                <div className="absolute inset-x-0 bottom-0 top-3 select-none opacity-80 pointer-events-none">
+                  <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                    <defs>
+                      <linearGradient id="photoWaveGradCompactDesktop" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.08" />
+                        <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.0" />
+                      </linearGradient>
+                    </defs>
+                    <path
+                      d="M0,70 C15,60 25,75 40,78 C55,80 70,45 85,52 C92,54 96,30 100,32 L100,100 L0,100 Z"
+                      fill="url(#photoWaveGradCompactDesktop)"
+                    />
+                    <path
+                      d="M0,70 C15,60 25,75 40,78 C55,80 70,45 85,52 C92,54 96,30 100,32"
+                      fill="none"
+                      stroke="#a855f7"
+                      strokeWidth="1.2"
+                      strokeDasharray="3 2"
+                      strokeLinecap="round"
+                      className="opacity-60"
+                    />
+                    <circle cx="100" cy="32" r="2" fill="#a855f7" />
+                  </svg>
+                </div>
+
+                {/* Text Badge overlay */}
+                <div className="relative z-10 flex flex-col items-center justify-center text-center space-y-0.5">
+                  <div className="p-0.5 rounded-full bg-purple-500/10 border border-purple-500/10 flex items-center justify-center">
+                    <Icons.TrendingUp className="w-2.5 h-2.5 text-purple-500" />
+                  </div>
+                  <span className="text-[9px] font-extrabold tracking-wide text-purple-600 dark:text-purple-400 block font-sans leading-none">
+                    Awaiting Exchange Listing
+                  </span>
+                </div>
+              </div>
+
+              {/* WHAT IS SURCHI? Button - Rendered vertically directly below the badge on lg screens */}
+              {onWhatIsSurchiClick && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onWhatIsSurchiClick();
+                  }}
+                  style={{ padding: '5px 10px', fontSize: '11px' }}
+                  className={`hidden lg:flex items-center justify-center gap-1 rounded-lg font-mono font-black tracking-wider uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
+                    themeMode === 'light'
+                      ? 'bg-purple-500/5 hover:bg-purple-500/10 text-purple-700 border-purple-500/15 shadow-purple-50/50'
+                      : 'text-[#c084fc] hover:text-[#d8b4fe] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/15 border border-[#8b5cf6]/20 shadow-[0_2px_8px_rgba(139,92,246,0.1)] hover:shadow-[0_2px_12px_rgba(139,92,246,0.18)]'
+                  }`}
+                >
+                  <Icons.Cpu className="w-3 h-3 shrink-0 animate-pulse text-[#8b5cf6]" />
+                  <span>WHAT IS SURCHI?</span>
+                  <Icons.ChevronRight className="w-3 h-3 shrink-0 text-[#8b5cf6]" />
+                </button>
+              )}
+            </div>
           </div>
 
         </div>
@@ -660,7 +685,7 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
                   onWhatIsSurchiClick();
                 }}
                 style={{ padding: '5px 10px', fontSize: '11px' }}
-                className={`relative flex items-center justify-center gap-1 rounded-lg font-mono font-black tracking-wider uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
+                className={`lg:hidden relative flex items-center justify-center gap-1 rounded-lg font-mono font-black tracking-wider uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
                   themeMode === 'light'
                     ? 'bg-purple-500/5 hover:bg-purple-500/10 text-purple-700 border-purple-500/15 shadow-purple-50/50'
                     : 'text-[#c084fc] hover:text-[#d8b4fe] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/15 border border-[#8b5cf6]/20 shadow-[0_2px_8px_rgba(139,92,246,0.1)] hover:shadow-[0_2px_12px_rgba(139,92,246,0.18)]'
