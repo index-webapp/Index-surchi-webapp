@@ -457,8 +457,8 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
       {/* DESKTOP INTEGRATED HORIZONTAL VIEW (≥768px) */}
       <div className="hidden md:flex md:flex-col p-4.5 space-y-4">
         
-        {/* ROW 1: Logo/Identity, Stats, and Chart */}
-        <div className="flex items-center justify-between gap-5">
+        {/* ROW 1: Logo/Identity, Stats, and Chart (with min-height & padding) */}
+        <div className="flex items-center justify-between gap-5 min-h-[72px] py-1">
           
           {/* Left Block: Surchi Identity & PRE-LAUNCH Badge */}
           <div className="flex items-center gap-3.5 shrink-0">
@@ -659,8 +659,8 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
                   e.stopPropagation();
                   onWhatIsSurchiClick();
                 }}
-                style={{ padding: '6px 14px', fontSize: '11px' }}
-                className={`flex items-center justify-center gap-1.5 rounded-lg font-mono font-black tracking-widest uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
+                style={{ padding: '5px 12px', fontSize: '12px' }}
+                className={`relative flex items-center justify-center gap-1.5 rounded-lg font-mono font-black tracking-widest uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
                   themeMode === 'light'
                     ? 'bg-purple-500/5 hover:bg-purple-500/10 text-purple-700 border-purple-500/15 shadow-purple-50/50'
                     : 'text-[#c084fc] hover:text-[#d8b4fe] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/15 border border-[#8b5cf6]/20 shadow-[0_2px_8px_rgba(139,92,246,0.1)] hover:shadow-[0_2px_12px_rgba(139,92,246,0.18)]'

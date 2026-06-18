@@ -6487,7 +6487,7 @@ export default function App() {
                       )}
 
                       {/* Right Block: SurchiTokenMetrics Card with embedded What Is Surchi button */}
-                      <div className="w-full max-w-[320px] md:max-w-none mx-auto">
+                      <div className="w-full mx-auto">
                         <SurchiTokenMetrics 
                           themeMode={themeMode}
                           onPriceClick={() => {
