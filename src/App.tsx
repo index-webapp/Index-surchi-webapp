@@ -5747,45 +5747,7 @@ export default function App() {
                 </nav>
               </div>
 
-              {/* SECTION 2: ACCESS & UTILITY */}
-              <div className="space-y-2">
-                <h4 className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-extrabold text-left pl-1">
-                  UTILITIES & ACCESS TIERS
-                </h4>
-                <div className="grid grid-cols-2 gap-2 font-mono">
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false); // Close drawer first to reveal about modal
-                      setAboutSubTab('overview');
-                      setShowAboutModal(true);
-                    }}
-                    className={`py-2.5 rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] select-none ${
-                      themeMode === 'light'
-                        ? 'bg-indigo-50 hover:bg-indigo-150 border border-indigo-200 text-indigo-700 hover:text-indigo-800'
-                        : 'bg-[#1b1c31] hover:bg-[#25274ade] text-cyber-cyan hover:text-cyber-neon border border-cyber-border'
-                    }`}
-                    title="About SURCHI Protocol"
-                  >
-                    <Icons.BookOpen className={`w-4 h-4 ${themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-cyan'}`} />
-                    <span className="font-bold">ABOUT</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setIsMenuOpen(false);
-                      setShowDonateModal(true);
-                    }}
-                    className={`py-2.5 rounded-lg cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-[9px] select-none ${
-                      themeMode === 'light'
-                        ? 'bg-rose-50 hover:bg-rose-100 border border-rose-200/80 text-[#db2777] hover:text-rose-705'
-                        : 'bg-[#2d0f1b] hover:bg-[#4a1c2d] text-[#ff4b82] hover:text-[#ff7da3] border border-[#ff4b82]/30'
-                    }`}
-                    title="Donate address details"
-                  >
-                    <Icons.Heart className={`w-4 h-4 ${themeMode === 'light' ? 'text-[#e11d48]' : 'text-[#ff4b82]'}`} />
-                    <span className="font-bold">DONATE</span>
-                  </button>
-                </div>
-              </div>
+
 
               {/* SECTION 3: PROTOCOL HISTORY LOGS */}
               <div className="space-y-2">
