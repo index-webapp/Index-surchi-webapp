@@ -436,16 +436,16 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
                   e.stopPropagation();
                   onWhatIsSurchiClick();
                 }}
-                style={{ padding: '5px 10px', fontSize: '11px' }}
-                className={`flex items-center justify-center gap-1 rounded-lg font-mono font-black tracking-wider uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
+                style={{ padding: '3.5px 8px', fontSize: '9.5px' }}
+                className={`flex items-center justify-center gap-0.5 rounded-lg font-mono font-black tracking-wide uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
                   themeMode === 'light'
                     ? 'bg-purple-500/5 hover:bg-purple-500/10 text-purple-700 border-purple-500/15'
                     : 'text-[#c084fc] hover:text-[#d8b4fe] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/15 border border-[#8b5cf6]/20 shadow-[0_2px_8px_rgba(139,92,246,0.1)] hover:shadow-[0_2px_12px_rgba(139,92,246,0.18)]'
                 }`}
               >
-                <Icons.Cpu className="w-3 h-3 shrink-0 animate-pulse text-[#8b5cf6]" />
+                <Icons.Cpu className="w-2.5 h-2.5 shrink-0 animate-pulse text-[#8b5cf6]" />
                 <span>WHAT IS SURCHI?</span>
-                <Icons.ChevronRight className="w-3 h-3 shrink-0 text-[#8b5cf6]" />
+                <Icons.ChevronRight className="w-2.5 h-2.5 shrink-0 text-[#8b5cf6]" />
               </button>
             )}
           </div>
@@ -627,16 +627,16 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
                     e.stopPropagation();
                     onWhatIsSurchiClick();
                   }}
-                  style={{ padding: '5px 10px', fontSize: '11px' }}
-                  className={`hidden lg:flex items-center justify-center gap-1 rounded-lg font-mono font-black tracking-wider uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
+                  style={{ padding: '3.5px 8px', fontSize: '9.5px' }}
+                  className={`hidden lg:flex items-center justify-center gap-0.5 rounded-lg font-mono font-black tracking-wide uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
                     themeMode === 'light'
                       ? 'bg-purple-500/5 hover:bg-purple-500/10 text-purple-700 border-purple-500/15 shadow-purple-50/50'
                       : 'text-[#c084fc] hover:text-[#d8b4fe] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/15 border border-[#8b5cf6]/20 shadow-[0_2px_8px_rgba(139,92,246,0.1)] hover:shadow-[0_2px_12px_rgba(139,92,246,0.18)]'
                   }`}
                 >
-                  <Icons.Cpu className="w-3 h-3 shrink-0 animate-pulse text-[#8b5cf6]" />
+                  <Icons.Cpu className="w-2.5 h-2.5 shrink-0 animate-pulse text-[#8b5cf6]" />
                   <span>WHAT IS SURCHI?</span>
-                  <Icons.ChevronRight className="w-3 h-3 shrink-0 text-[#8b5cf6]" />
+                  <Icons.ChevronRight className="w-2.5 h-2.5 shrink-0 text-[#8b5cf6]" />
                 </button>
               )}
             </div>
@@ -684,16 +684,16 @@ export function SurchiTokenMetrics({ onPriceClick, onWhatIsSurchiClick, onMetric
                   e.stopPropagation();
                   onWhatIsSurchiClick();
                 }}
-                style={{ padding: '5px 10px', fontSize: '11px' }}
-                className={`lg:hidden relative flex items-center justify-center gap-1 rounded-lg font-mono font-black tracking-wider uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
+                style={{ padding: '3.5px 8px', fontSize: '9.5px' }}
+                className={`lg:hidden relative flex items-center justify-center gap-0.5 rounded-lg font-mono font-black tracking-wide uppercase hover:scale-[1.01] active:scale-[0.99] transition-all cursor-pointer select-none border shadow-sm shrink-0 leading-none ${
                   themeMode === 'light'
                     ? 'bg-purple-500/5 hover:bg-purple-500/10 text-purple-700 border-purple-500/15 shadow-purple-50/50'
                     : 'text-[#c084fc] hover:text-[#d8b4fe] bg-[#8B5CF6]/10 hover:bg-[#8B5CF6]/15 border border-[#8b5cf6]/20 shadow-[0_2px_8px_rgba(139,92,246,0.1)] hover:shadow-[0_2px_12px_rgba(139,92,246,0.18)]'
                 }`}
               >
-                <Icons.Cpu className="w-3 h-3 shrink-0 animate-pulse text-[#8b5cf6]" />
+                <Icons.Cpu className="w-2.5 h-2.5 shrink-0 animate-pulse text-[#8b5cf6]" />
                 <span>WHAT IS SURCHI?</span>
-                <Icons.ChevronRight className="w-3 h-3 shrink-0 text-[#8b5cf6]" />
+                <Icons.ChevronRight className="w-2.5 h-2.5 shrink-0 text-[#8b5cf6]" />
               </button>
             )}
           </div>
