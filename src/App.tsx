@@ -1401,8 +1401,14 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
   const activeWickSize = Math.max(1, Math.floor(activeBarSize * 0.15));
 
   const getDexScreenerEmbedUrl = () => {
-    const chainId = (details.chainId || 'ethereum').toLowerCase();
-    const pairAddress = details.pairAddress;
+    const isFallback = !details.pairAddress || 
+                       details.pairAddress === '9u9surchi_ecosystem_token_placeholder' || 
+                       details.pairAddress.includes('...') ||
+                       details.pairAddress.trim().length < 20;
+    
+    const chainId = isFallback ? 'solana' : (details.chainId || 'ethereum').toLowerCase();
+    const pairAddress = isFallback ? '8s5px8G6gXg7Pb6CB4Re97wX5z9QG3MeeT1V8uTfP3r3' : details.pairAddress;
+    
     if (!pairAddress) return '';
     const theme = themeMode === 'light' ? 'light' : 'dark';
     return `https://dexscreener.com/${chainId}/${pairAddress}?embed=1&theme=${theme}&trades=0&info=0`;
@@ -1544,8 +1550,7 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
             className={`px-2.5 py-1 text-[9px] font-mono font-bold rounded transition-all flex items-center gap-1 cursor-pointer border ${
               activeTab === 'dexscreener' ? buttonActiveBg : buttonInactiveBg
             }`}
-            disabled={!details.pairAddress}
-            title={!details.pairAddress ? "No pool pair detected to load frame" : "DexScreener Pro Frame"}
+            title="DexScreener Pro Frame"
           >
             <Icons.TrendingUp className="w-2.5 h-2.5" />
             <span>DexScreener Feed</span>
@@ -2119,21 +2124,37 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
         </>
       ) : activeTab === 'dexscreener' ? (
         <div className={`flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border relative bg-black ${isLight ? 'border-slate-200 shadow-sm' : 'border-cyber-cyan/10'}`}>
-          {getDexScreenerEmbedUrl() ? (
-            <iframe 
-              src={getDexScreenerEmbedUrl()}
-              className="absolute inset-0 w-full h-full border-0"
-              title="DexScreener Embed Chart Terminal"
-              allow="clipboard-write"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-full text-slate-400 p-6 text-center space-y-2">
-              <Icons.AlertTriangle className="w-8 h-8 text-amber-500" />
-              <p className="font-mono text-xs">No active pool pair address detected for this token.</p>
-              <p className="font-sans text-[10px] text-slate-500 max-w-xs">DexScreener Terminal requires an active liquidity pool address contract on EVM/Solana networks to load the trading frame.</p>
-            </div>
-          )}
+          {(() => {
+            const embedUrl = getDexScreenerEmbedUrl();
+            const isFallback = !details.pairAddress || 
+                               details.pairAddress === '9u9surchi_ecosystem_token_placeholder' || 
+                               details.pairAddress.includes('...') ||
+                               details.pairAddress.trim().length < 20;
+
+            return embedUrl ? (
+              <>
+                <iframe 
+                  src={embedUrl}
+                  className="absolute inset-0 w-full h-full border-0"
+                  title="DexScreener Embed Chart Terminal"
+                  allow="clipboard-write"
+                  referrerPolicy="no-referrer"
+                />
+                {isFallback && (
+                  <div className="absolute top-2 left-2 z-10 bg-purple-600/90 border border-purple-400/20 text-white font-mono text-[9px] font-black px-2 py-1 rounded shadow flex items-center gap-1.5 backdrop-blur-sm">
+                    <Icons.Cpu className="w-3 h-3 text-cyan-200 animate-pulse shrink-0" />
+                    <span>SURCHI ECOSYSTEM PENDING LAUNCH — DEMO SOL-USDC CHARTS LIVE</span>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-slate-400 p-6 text-center space-y-2">
+                <Icons.AlertTriangle className="w-8 h-8 text-amber-500" />
+                <p className="font-mono text-xs">No active pool pair address detected for this token.</p>
+                <p className="font-sans text-[10px] text-slate-500 max-w-xs">DexScreener Terminal requires an active liquidity pool address contract on EVM/Solana networks to load the trading frame.</p>
+              </div>
+            );
+          })()}
         </div>
       ) : (
         <div className={`flex-1 w-full h-[360px] min-h-[300px] rounded-lg overflow-hidden border relative bg-black ${isLight ? 'border-slate-200 shadow-sm' : 'border-cyber-cyan/10'}`}>
@@ -2278,6 +2299,8 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
             // keep state updated with fresh pair info without breaking
             setPolledDetails({
               ...originalDetails,
+              pairAddress: mainPair.pairAddress || originalDetails.pairAddress,
+              chainId: mainPair.chainId || originalDetails.chainId,
               priceUsd: mainPair.priceUsd ? parseFloat(mainPair.priceUsd).toString() : originalDetails.priceUsd,
               liquidityUsd: mainPair.liquidity?.usd || originalDetails.liquidityUsd,
               volume24h: mainPair.volume?.h24 || originalDetails.volume24h,
@@ -2378,6 +2401,8 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
           const pair = sortedPairs[0];
           const freshDetails = {
             ...originalDetails,
+            pairAddress: pair.pairAddress || originalDetails.pairAddress,
+            chainId: pair.chainId || originalDetails.chainId,
             priceUsd: pair.priceUsd ? parseFloat(pair.priceUsd).toString() : originalDetails.priceUsd,
             liquidityUsd: pair.liquidity?.usd || originalDetails.liquidityUsd,
             liquidityBase: pair.liquidity?.base || originalDetails.liquidityBase,
