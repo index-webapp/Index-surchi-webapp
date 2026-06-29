@@ -4306,7 +4306,16 @@ export default function App() {
     // Find value of 'token' input
     const inputVal = formInputs.token?.trim() || '';
     
-    if (!inputVal) {
+    if (inputVal && isBlockchainAddress(inputVal)) {
+      if (inputVal !== lastDetectedAddress) {
+        setActiveModuleId('token_analyzer');
+        setActiveCustomPage(null);
+        setLastDetectedAddress(inputVal);
+        setTokenNotFoundAddress(null);
+        // Trigger Live DexScreener Fetch & Auto Analyze!
+        fetchDexScreenerAndAnalyze(inputVal);
+      }
+    } else if (!inputVal) {
       // Clear if input is completely empty
       setLiveTokenInfo(null);
       setLastDetectedAddress('');
