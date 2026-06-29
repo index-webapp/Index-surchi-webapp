@@ -4046,6 +4046,7 @@ export default function App() {
 
   // Auto scroll to chat response
   const chatBottomRef = useRef<HTMLDivElement | null>(null);
+  const isReloadingHistory = useRef(false);
 
   // Sync history to client state
   useEffect(() => {
@@ -4066,18 +4067,15 @@ export default function App() {
       });
       setFormInputs(defaults);
       
-      // Load current result if a matching historic session exist, or reset to empty
-      const pastMatch = historyList.find(h => h.moduleId === activeModuleId);
-      if (pastMatch) {
-        setCurrentResult(pastMatch);
-        // Load historic conversation if any was simulated
-        setChatHistory([
-          { id: 'hist-welcome', role: 'assistant', content: `Neural channel restored for standard **${activeModule.name}** workspace parameters. Ask any follow-up question below...`, timestamp: new Date().toLocaleTimeString() }
-        ]);
-      } else {
-        setCurrentResult(null);
-        setChatHistory([]);
+      // If we are explicitly reloading from history, do not clear or overwrite currentResult and chatHistory
+      if (isReloadingHistory.current) {
+        isReloadingHistory.current = false;
+        return;
       }
+
+      // DO NOT load pastMatch automatically anymore! All states start empty/idle.
+      setCurrentResult(null);
+      setChatHistory([]);
     }
   }, [activeModuleId]);
 
@@ -4308,41 +4306,13 @@ export default function App() {
     // Find value of 'token' input
     const inputVal = formInputs.token?.trim() || '';
     
-    if (inputVal && isBlockchainAddress(inputVal)) {
-      if (inputVal !== lastDetectedAddress) {
-        setActiveModuleId('token_analyzer');
-        setActiveCustomPage(null);
-        setLastDetectedAddress(inputVal);
-        setTokenNotFoundAddress(null);
-        // Trigger Live DexScreener Fetch & Auto Analyze!
-        fetchDexScreenerAndAnalyze(inputVal);
-      }
-    } else if (!inputVal) {
+    if (!inputVal) {
       // Clear if input is completely empty
       setLiveTokenInfo(null);
       setLastDetectedAddress('');
       setTokenNotFoundAddress(null);
     }
   }, [formInputs.token]);
-
-  useEffect(() => {
-    if (activeModuleId !== 'smart_money_tracker') return;
-    
-    const walletVal = formInputs.wallet?.trim() || '';
-    
-    // Check if it's a valid Solana or EVM address
-    const isSol = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(walletVal);
-    const isEvm = /^0x[a-fA-F0-9]{40}$/.test(walletVal);
-    
-    if (walletVal && (isSol || isEvm)) {
-      if (walletVal !== lastDetectedWalletAddress) {
-        setLastDetectedWalletAddress(walletVal);
-        handleRunAnalysis(undefined, { ...formInputs, wallet: walletVal });
-      }
-    } else if (!walletVal) {
-      setLastDetectedWalletAddress('');
-    }
-  }, [formInputs.wallet, activeModuleId, lastDetectedWalletAddress]);
 
   const activeModule = MODULES.find(m => m.id === activeModuleId) || MODULES[0];
 
@@ -4577,6 +4547,7 @@ export default function App() {
 
   // Past query re-loader
   const handleReloadHistory = (item: AnalysisResult) => {
+    isReloadingHistory.current = true;
     setActiveModuleId(item.moduleId);
     setCurrentResult(item);
     setChatHistory([
@@ -6603,31 +6574,27 @@ export default function App() {
 
                           {/* Submit triggers */}
                           <div className="flex flex-col items-center justify-center gap-4 pt-2 w-full text-center">
-                            {activeModuleId !== 'token_analyzer' ? (
-                              <button
-                                type="submit"
-                                disabled={loading || isFetchingTokenDetails}
-                                className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
-                                  themeMode === 'light'
-                                    ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
-                                    : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
-                                }`}
-                              >
-                                {loading || isFetchingTokenDetails ? (
-                                  <>
-                                    <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
-                                    <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Icons.Radar className="w-4 h-4" />
-                                    <span>{activeModule.buttonText}</span>
-                                  </>
-                                )}
-                              </button>
-                            ) : (
-                              <button type="submit" className="hidden" />
-                            )}
+                            <button
+                              type="submit"
+                              disabled={loading || isFetchingTokenDetails}
+                              className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
+                                themeMode === 'light'
+                                  ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
+                                  : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
+                              }`}
+                            >
+                              {loading || isFetchingTokenDetails ? (
+                                <>
+                                  <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
+                                  <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Icons.Radar className="w-4 h-4" />
+                                  <span>{activeModule.buttonText}</span>
+                                </>
+                              )}
+                            </button>
                             {(loading || isFetchingTokenDetails) && (
                               <span className={`text-[10px] font-mono animate-pulse uppercase tracking-widest font-semibold flex items-center justify-center gap-1.5 ${
                                 themeMode === 'light' ? 'text-indigo-600' : 'text-cyber-neon'
