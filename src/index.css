@@ -2,55 +2,55 @@
 @import "tailwindcss";
 
 :root {
-  color-scheme: dark light;
+  color-scheme: dark;
 }
 
 /* Base definitions for Dark Mode (Defaults) */
 :root, html, html.dark {
-  --color-cyber-bg: #000000;
-  --color-cyber-card: #000000;
-  --color-cyber-card-light: #000000;
-  --color-cyber-border: rgba(60, 60, 100, 0.25);
-  --color-cyber-neon: #00ff88;     /* Neon Green */
-  --color-cyber-purple: #7c3aed;   /* Electric purple */
-  --color-cyber-cyan: #00e5ff;     /* Laser Cyan */
-  --color-cyber-text: #e2e8f0;     /* slate-200 */
-  --color-cyber-text-muted: #94a3b8; /* slate-400 */
+  --color-cyber-bg: #050608;
+  --color-cyber-card: #070D10;
+  --color-cyber-card-light: #0A0F12;
+  --color-cyber-border: rgba(0, 229, 255, 0.15);
+  --color-cyber-neon: #00FFA3;     /* Teal-Green for gains */
+  --color-cyber-purple: #00E5FF;   /* Bright Cyan */
+  --color-cyber-cyan: #00E5FF;     /* Bright Cyan */
+  --color-cyber-text: #FFFFFF;     /* White text */
+  --color-cyber-text-muted: #7A8B94; /* Muted gray-cyan */
   
-  --color-cyber-pure-bg: #000000;
-  --color-cyber-pure-card: #000000;
-  --color-cyber-pure-header: #000000;
-  --color-cyber-pure-modal: #000000;
-  --color-cyber-pure-inner: #000000;
+  --color-cyber-pure-bg: #050608;
+  --color-cyber-pure-card: #070D10;
+  --color-cyber-pure-header: #050608;
+  --color-cyber-pure-modal: #070D10;
+  --color-cyber-pure-inner: #0A0F12;
   
   --matrix-opacity: 0.2;
   --glass-blur: blur(12px) saturate(180%);
-  --cyber-shadow-subtle: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
-  --accent-gradient: linear-gradient(135deg, #00e5ff 0%, #7c3aed 100%);
+  --cyber-shadow-subtle: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --accent-gradient: linear-gradient(135deg, #00E5FF 0%, #00FFA3 100%);
 }
 
-/* Adaptive Light Mode Configuration */
+/* Adaptive Light Mode Configuration mapped to same cyber-cyan dark palette for consistency */
 html.light {
-  --color-cyber-bg: #ffffff;
-  --color-cyber-card: rgba(255, 255, 255, 0.82);
-  --color-cyber-card-light: rgba(241, 245, 249, 0.85);
-  --color-cyber-border: rgba(148, 163, 184, 0.25);
-  --color-cyber-neon: #16a34a;     /* Premium Emerald Green */
-  --color-cyber-purple: #7c3aed;   /* Deep Electric Purple */
-  --color-cyber-cyan: #0284c7;     /* Tech Navy Cyan */
-  --color-cyber-text: #0f172a;     /* Deep Slate 900 */
-  --color-cyber-text-muted: #475569; /* Slate 600 */
+  --color-cyber-bg: #050608;
+  --color-cyber-card: #070D10;
+  --color-cyber-card-light: #0A0F12;
+  --color-cyber-border: rgba(0, 229, 255, 0.15);
+  --color-cyber-neon: #00FFA3;     /* Teal-Green */
+  --color-cyber-purple: #00E5FF;   /* Bright Cyan */
+  --color-cyber-cyan: #00E5FF;     /* Bright Cyan */
+  --color-cyber-text: #FFFFFF;     /* White text */
+  --color-cyber-text-muted: #7A8B94; /* Muted gray-cyan */
   
-  --color-cyber-pure-bg: #ffffff;
-  --color-cyber-pure-card: #ffffff;
-  --color-cyber-pure-header: rgba(255, 255, 255, 0.88);
-  --color-cyber-pure-modal: #ffffff;
-  --color-cyber-pure-inner: #f1f5f9;
+  --color-cyber-pure-bg: #050608;
+  --color-cyber-pure-card: #070D10;
+  --color-cyber-pure-header: #050608;
+  --color-cyber-pure-modal: #070D10;
+  --color-cyber-pure-inner: #0A0F12;
   
-  --matrix-opacity: 0.08;
-  --glass-blur: blur(16px) saturate(140%);
-  --cyber-shadow-subtle: 0 8px 32px 0 rgba(15, 23, 42, 0.05);
-  --accent-gradient: linear-gradient(135deg, #0284c7 0%, #7c3aed 100%);
+  --matrix-opacity: 0.2;
+  --glass-blur: blur(12px) saturate(180%);
+  --cyber-shadow-subtle: 0 8px 32px 0 rgba(0, 0, 0, 0.6);
+  --accent-gradient: linear-gradient(135deg, #00E5FF 0%, #00FFA3 100%);
 }
 
 @theme {
@@ -303,17 +303,17 @@ html.light .bg-slate-900\/60 {
 
 /* Overriding specific buy/sell/mint/pause indicators in Light Mode to keep styling pristine */
 html.light .bg-\[\#0d2a23\]\/80 {
-  background-color: rgba(22, 163, 74, 0.12) !important;
-  color: #15803d !important;
+  background-color: rgba(0, 255, 163, 0.12) !important;
+  color: #00FFA3 !important;
 }
 html.light .bg-\[\#0c1e19\], 
 html.light .bg-\[\#123e33\] {
-  background-color: rgba(22, 163, 74, 0.15) !important;
+  background-color: rgba(0, 255, 163, 0.15) !important;
 }
 
 html.light .bg-\[\#2d0f1b\] {
-  background-color: rgba(220, 38, 38, 0.12) !important;
-  color: #dc2626 !important;
+  background-color: rgba(255, 77, 77, 0.12) !important;
+  color: #FF4D4D !important;
 }
 
 /* Chat Input field overrides */
@@ -321,7 +321,7 @@ html.light input,
 html.light select,
 html.light textarea,
 html.light .bg-\[\#020205\] {
-  background-color: #ffffff !important;
+  background-color: #0A0F12 !important;
   color: var(--color-cyber-text) !important;
   border-color: var(--color-cyber-border) !important;
 }
@@ -401,4 +401,18 @@ html.light .bg-\[linear-gradient\(to_right\,\#1e1e3f_1px\,transparent_1px\)\,lin
   0% { opacity: 0.8; }
   50% { opacity: 0.95; }
   100% { opacity: 1; }
+}
+
+/* Global inputs consistency overrides */
+input, select, textarea {
+  background-color: #0A0F12 !important;
+  color: #FFFFFF !important;
+  border-color: rgba(0, 229, 255, 0.15) !important;
+}
+input::placeholder, textarea::placeholder {
+  color: #7A8B94 !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #00E5FF !important;
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.25) !important;
 }

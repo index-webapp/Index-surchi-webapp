@@ -181,7 +181,7 @@ export default function SurchiBuildingStatus({ onComplete, themeMode = 'dark' }:
                 isActive 
                   ? isLight
                     ? 'bg-indigo-50/50 border-indigo-300 shadow-sm scale-[1.01]'
-                    : 'bg-cyber-purple/10 border-[#a855f7]/40 shadow-[0_0_12px_rgba(168,85,247,0.06)] scale-[1.01]' 
+                    : 'bg-cyber-cyan/10 border-[#00E5FF]/40 shadow-[0_0_12px_rgba(0,229,255,0.06)] scale-[1.01]' 
                   : isCompleted
                     ? isLight
                       ? 'bg-slate-100 border-slate-200/60 opacity-80'
@@ -309,8 +309,8 @@ export default function SurchiBuildingStatus({ onComplete, themeMode = 'dark' }:
                   onClick={onComplete}
                   className={`flex-1 py-3 px-6 rounded-xl text-xs font-mono font-black uppercase transition-all tracking-wider flex items-center justify-center gap-2 cursor-pointer select-none text-white bg-gradient-to-r hover:scale-[1.02] active:scale-[0.98] shadow-md ${
                     isLight 
-                      ? 'from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-indigo-200' 
-                      : 'from-[#a855f7] to-[#00e5ff] hover:from-[#b975ff] hover:to-[#33ebff] shadow-[0_0_15px_rgba(168,85,247,0.4)]'
+                      ? 'from-cyan-600 to-emerald-600 hover:from-cyan-700 hover:to-emerald-700 shadow-cyan-200' 
+                      : 'from-[#00b0ff] to-[#00e5ff] hover:from-[#33bfff] hover:to-[#33ebff] shadow-[0_0_15px_rgba(0,229,255,0.4)]'
                   }`}
                 >
                   <Icons.Key className="w-4 h-4 animate-pulse text-white" />

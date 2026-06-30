@@ -588,7 +588,7 @@ function getTokenForensics(address: string, totalSupply: number, chainId?: strin
       title: `${dexLabel} Pair Registration`,
       category: "lp_init",
       badge: "PAIR DEPLOYED",
-      color: "border-purple-500/30 text-purple-400 bg-purple-500/10",
+      color: "border-cyan-500/30 text-cyan-400 bg-cyan-500/10",
       date: formattedDate(createdTs - (4 * 60 * 1000)),
       ts: createdTs - (4 * 60 * 1000),
       block: startBlock - Math.floor(15 + (seed % 20)),
@@ -2141,7 +2141,7 @@ function InteractiveMarketChart({ details, themeAccent, themeMode, livePrice }: 
                   referrerPolicy="no-referrer"
                 />
                 {isFallback && (
-                  <div className="absolute top-2 left-2 z-10 bg-purple-600/90 border border-purple-400/20 text-white font-mono text-[9px] font-black px-2 py-1 rounded shadow flex items-center gap-1.5 backdrop-blur-sm">
+                  <div className="absolute top-2 left-2 z-10 bg-[#070D10]/95 border border-[#00E5FF]/30 text-[#00E5FF] font-mono text-[9px] font-black px-2 py-1 rounded shadow flex items-center gap-1.5 backdrop-blur-sm">
                     <Icons.Cpu className="w-3 h-3 text-cyan-200 animate-pulse shrink-0" />
                     <span>SURCHI ECOSYSTEM PENDING LAUNCH — DEMO SOL-USDC CHARTS LIVE</span>
                   </div>
@@ -2827,8 +2827,8 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
     : "bg-cyber-cyan/10 hover:bg-cyber-cyan/20 border border-cyber-cyan/35 text-[#00e5ff] hover:text-white";
 
   const pdfBtnClasses = isLight
-    ? "bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-655 font-bold"
-    : "bg-cyber-purple/15 hover:bg-cyber-purple/35 border border-cyber-purple/40 text-[#c084fc] hover:text-white";
+    ? "bg-cyan-50 hover:bg-cyan-100 border border-cyan-200 text-cyan-600 font-bold"
+    : "bg-[#00E5FF]/10 hover:bg-[#00E5FF]/20 border border-[#00E5FF]/30 text-[#00E5FF] hover:text-white";
 
   const closeBtnClasses = isLight
     ? "bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-600 hover:text-rose-850"
@@ -2943,7 +2943,7 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
               src={details.logoUrl} 
               alt={details.name} 
               referrerPolicy="no-referrer"
-              className={`w-12 h-12 rounded-full border-2 ${isLight ? 'border-purple-300 bg-slate-50' : 'border-cyber-cyan/40 bg-[#040409]'} shadow-[0_0_10px_rgba(0,229,255,0.2)] object-cover shrink-0`} 
+              className={`w-12 h-12 rounded-full border-2 ${isLight ? 'border-cyan-300 bg-slate-50' : 'border-cyber-cyan/40 bg-[#040409]'} shadow-[0_0_10px_rgba(0,229,255,0.2)] object-cover shrink-0`} 
             />
           ) : (
             <div className={`w-12 h-12 rounded-full border-2 ${isLight ? 'border-indigo-305 bg-indigo-50/50 text-indigo-700 font-bold' : 'border-cyber-cyan/30 bg-gradient-to-tr from-[#03030a] to-[#121235]'}-tr from-[#03030a] to-[#121235] shadow-[0_0_8px_rgba(0,230,255,0.1)] flex items-center justify-center font-display font-black text-cyber-cyan text-sm tracking-wide shrink-0`}>
@@ -3179,7 +3179,7 @@ function LiveTokenLedgerCard({ details: originalDetails, themeAccent, themeMode,
                 iconColor = 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
               } else if (ex.dexId === 'raydium') {
                 IconComp = Icons.Orbit;
-                iconColor = 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+                iconColor = 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
               } else if (ex.dexId === 'jupiter') {
                 IconComp = Icons.Zap;
                 iconColor = 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
@@ -3782,12 +3782,12 @@ export default function App() {
     localStorage.setItem('surchi_theme_accent', themeAccent);
   }, [themeAccent]);
 
-  const [themeMode, setThemeMode] = useState<'dark' | 'light'>('light');
+  const [themeMode, setThemeMode] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
-    localStorage.setItem('surchi_theme_mode', 'light');
-    document.documentElement.classList.remove('dark');
-    document.documentElement.classList.add('light');
+    localStorage.setItem('surchi_theme_mode', 'dark');
+    document.documentElement.classList.remove('light');
+    document.documentElement.classList.add('dark');
   }, [themeMode]);
 
 
@@ -4679,7 +4679,7 @@ export default function App() {
       return <span className="px-3 py-1 rounded bg-rose-950/40 text-red-400 text-xs font-mono border border-red-500/30 animate-pulse-danger">🔴 Critical Warning Risk</span>;
     }
     if (lower.includes('💀 likely rug') || lower.includes('💀 rug')) {
-      return <span className="px-3 py-1 rounded bg-purple-950/40 text-fuchsia-400 text-xs font-mono border border-fuchsia-500/30 animate-pulse-danger">💀 MALICIOUS CONTROLS DETECTED</span>;
+      return <span className="px-3 py-1 rounded bg-rose-955/40 text-rose-500 text-xs font-mono border border-rose-500/30 animate-pulse-danger">💀 MALICIOUS CONTROLS DETECTED</span>;
     }
     return null;
   };
@@ -4750,7 +4750,7 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen ${themeMode === 'light' ? 'bg-white text-slate-900' : 'bg-black text-[#e2e8f0]'} font-sans flex relative overflow-x-hidden`}>
+    <div className={`min-h-screen bg-[#050608] text-white font-sans flex relative overflow-x-hidden`}>
       
       {/* Dynamic Theme Color Style Injections */}
       <style>{`
@@ -4788,7 +4788,7 @@ export default function App() {
       
       {/* Absolute Hex Matrix Grid Line Overlay */}
       {themeMode !== 'light' && (
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e1e3f_1px,transparent_1px),linear-gradient(to_bottom,#1e1e3f_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_60%,transparent_100%)] pointer-events-none z-0 opacity-20"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(0,229,255,0.03)_1px,transparent_1px),linear-gradient(to_bottom,rgba(0,229,255,0.03)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_60%,transparent_100%)] pointer-events-none z-0 opacity-25"></div>
       )}
 
       {/* BACKGROUND APP CONTENT LOCK WRAPPER */}
@@ -4977,7 +4977,7 @@ export default function App() {
                                   <span className={`text-[8px] font-bold font-mono px-1 py-0.5 rounded leading-none uppercase shrink-0 scale-90 ${
                                     sentimentFresh
                                       ? 'bg-emerald-500/20 text-emerald-500 border border-emerald-500/40 animate-pulse'
-                                      : 'bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/35'
+                                      : 'bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35'
                                   }`}>
                                     {sentimentFresh ? 'LIVE' : 'LIVE FEED'}
                                   </span>
@@ -5413,7 +5413,7 @@ export default function App() {
                                               setSolDeployerError('Solana wallet not found. Install Phantom wallet.');
                                             }
                                           }}
-                                          className="w-full py-1 rounded text-[9.5px] font-black uppercase text-center cursor-pointer transition-all bg-purple-600 hover:bg-purple-750 text-white"
+                                          className="w-full py-1 rounded text-[9.5px] font-black uppercase text-center cursor-pointer transition-all bg-[#00E5FF] hover:bg-[#00E5FF]/80 text-[#000000]"
                                         >
                                           Connect Solana Wallet
                                         </button>
@@ -5764,7 +5764,7 @@ export default function App() {
                   </h4>
                   {historyList.length > 0 && (
                     <span className={`text-[8px] font-mono uppercase font-bold ${
-                      themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-purple'
+                      themeMode === 'light' ? 'text-indigo-650' : 'text-cyber-cyan'
                     }`}>
                       {historyList.length} saves
                     </span>
@@ -5784,16 +5784,16 @@ export default function App() {
                       activeCustomPage === 'intelligence_archives'
                         ? themeMode === 'light'
                           ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                          : 'bg-cyber-card-light border-cyber-purple text-cyber-purple-light shadow-[0_0_8px_rgba(235,0,255,0.15)]'
+                          : 'bg-cyber-card-light border-cyber-cyan text-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.15)]'
                         : themeMode === 'light'
                           ? 'bg-white hover:bg-slate-50 border-slate-200 text-slate-700'
-                          : 'bg-[#100c1e] hover:bg-[#1a1332] text-slate-350 hover:text-white border border-cyber-border/80'
+                          : 'bg-[#03030d] hover:bg-[#07151a] text-slate-350 hover:text-white border border-cyber-border/80'
                     }`}
                     title="Open Saved Reports Intelligence Archives"
                   >
                     <div className="flex items-center gap-1">
-                      <Icons.FolderHeart className="w-3.5 h-3.5 text-cyber-purple shrink-0" />
-                      <span className="text-[8px] bg-cyber-purple/15 text-cyber-purple border border-cyber-purple/35 px-1 py-0.5 rounded font-black scale-90 leading-none">
+                      <Icons.FolderHeart className="w-3.5 h-3.5 text-cyber-cyan shrink-0" />
+                      <span className="text-[8px] bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/35 px-1 py-0.5 rounded font-black scale-90 leading-none">
                         {historyList.length} SAVES
                       </span>
                     </div>
@@ -6040,7 +6040,7 @@ export default function App() {
                   className="border border-cyber-neon/20 bg-cyber-card backdrop-blur-md rounded-xl p-4 sm:p-5 shadow-[0_0_20px_rgba(0,191,255,0.02)] sm:shadow-[0_0_30px_rgba(0,191,255,0.03)] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative overflow-hidden text-left transition-all duration-300 ease-out animate-fade-in"
                 >
                   {/* Left subtle pulsing core glow */}
-                  <div className="absolute left-0 top-0 w-1.5 h-full bg-gradient-to-b from-cyber-cyan via-cyber-purple to-cyber-neon" />
+                  <div className="absolute left-0 top-0 w-1.5 h-full bg-gradient-to-b from-cyber-cyan via-cyber-cyan to-cyber-neon" />
 
                   <div className="flex items-start gap-3">
                     <span className="p-2 rounded-lg bg-cyber-neon/10 border border-cyber-neon/25 text-cyber-neon shrink-0 mt-0.5 animate-pulse">
@@ -6242,9 +6242,9 @@ export default function App() {
                   <div className={`rounded-xl border p-6 sm:p-8 shadow-2xl relative overflow-hidden text-left font-mono transition-all duration-300 ${
                     themeMode === 'light'
                       ? 'bg-white border-slate-200 text-slate-800 shadow-slate-200/50'
-                      : 'bg-[#0b0b1a] border-cyber-border text-white'
+                      : 'bg-[#070D10] border-cyber-border text-white'
                   }`}>
-                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                    <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-cyber-cyan/10 to-transparent pointer-events-none rounded-bl-full"></div>
                     
                     <div className="max-w-2xl space-y-6 relative z-10">
                       <div className="flex items-center gap-3 text-xs">
@@ -6327,7 +6327,7 @@ export default function App() {
                                 ? 'border-indigo-100 bg-white/80 shadow-xs text-slate-705 text-slate-700'
                                 : 'border-cyber-border/30 bg-cyber-card-light/40'
                             }`}>
-                              <span className="text-indigo-600 dark:text-cyber-purple font-bold block">● AUDITED BYTECODE</span>
+                              <span className="text-indigo-600 dark:text-cyber-cyan font-bold block">● AUDITED BYTECODE</span>
                               <span className={`text-[10.5px] leading-normal block ${themeMode === 'light' ? 'text-slate-600' : 'text-slate-400'}`}>100% pre-audited solidity and Rust binaries to satisfy security requirements out-of-the-box.</span>
                             </div>
                             <div className={`space-y-1.5 border p-2.5 rounded-lg ${
@@ -6480,11 +6480,11 @@ export default function App() {
                       <section className={`rounded-xl border ${activeModuleId === 'token_analyzer' ? 'p-3.5 sm:p-4.5' : 'p-4 sm:p-6'} shadow-2xl relative overflow-hidden ${
                         themeMode === 'light'
                           ? 'bg-white border-slate-200 shadow-slate-200/55'
-                          : 'bg-[#0b0b1a] border-cyber-border/80 shadow-2xl'
+                          : 'bg-[#070D10] border-cyber-border/80 shadow-2xl'
                       }`}>
                         {/* Ambient Corner Glow grids */}
                         {themeMode !== 'light' ? (
-                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-purple/10 to-transparent pointer-events-none rounded-bl-full"></div>
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyber-cyan/10 to-transparent pointer-events-none rounded-bl-full"></div>
                         ) : (
                           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-indigo-50 to-transparent pointer-events-none rounded-bl-full"></div>
                         )}
@@ -6586,15 +6586,11 @@ export default function App() {
                             <button
                               type="submit"
                               disabled={loading || isFetchingTokenDetails}
-                              className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider text-[#ffffff] cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 ${
-                                themeMode === 'light'
-                                  ? 'bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 shadow-md'
-                                  : 'bg-gradient-to-r from-cyber-purple to-indigo-800 hover:from-indigo-600 hover:to-cyber-purple shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]'
-                              }`}
+                              className={`px-8 py-3.5 rounded-lg text-xs font-bold font-mono tracking-wider cursor-pointer disabled:opacity-50 transition-all flex items-center justify-center gap-2 border border-[#00E5FF] text-[#00E5FF] bg-transparent hover:bg-[#00E5FF]/10 hover:shadow-[0_0_15px_rgba(0,229,255,0.25)]`}
                             >
                               {loading || isFetchingTokenDetails ? (
                                 <>
-                                  <Icons.Loader2 className="w-4 h-4 animate-spin text-[#ffffff]" />
+                                  <Icons.Loader2 className="w-4 h-4 animate-spin text-[#00E5FF]" />
                                   <span>{isFetchingTokenDetails ? "SYNCING CONTRACT POOL..." : statusMsg}</span>
                                 </>
                               ) : (
@@ -6748,7 +6744,7 @@ export default function App() {
                       <h4 className="text-xs font-bold text-cyber-neon font-mono uppercase">🎁 Isolated Copywright Ad Cards</h4>
                       <button 
                         onClick={() => handleRunAnalysis(undefined, currentResult.payload)}
-                        className="text-[10px] text-cyber-purple hover:text-cyber-cyan font-mono transition-colors"
+                        className="text-[10px] text-cyber-cyan hover:text-white font-mono transition-colors"
                       >
                         [⚡ Regenerate Full Copy Set]
                       </button>
@@ -6836,9 +6832,9 @@ export default function App() {
               </div>
 
               {/* COGNITIVE FLOW CHAT PORTLET (FOLLOW-UP AI CHAT) */}
-              <div className="bg-[#090915] rounded-xl border border-cyber-border overflow-hidden shadow-2xl relative">
-                <div className="bg-[#0c0c1e] px-4 sm:px-6 py-4 border-b border-cyber-border flex items-center gap-2">
-                  <Icons.MessageSquare className="w-4.5 h-4.5 text-cyber-purple" />
+              <div className="bg-[#070D10] rounded-xl border border-cyber-border overflow-hidden shadow-2xl relative">
+                <div className="bg-[#0A0F12] px-4 sm:px-6 py-4 border-b border-cyber-border flex items-center gap-2">
+                  <Icons.MessageSquare className="w-4.5 h-4.5 text-cyber-cyan" />
                   <div>
                     <h4 className="text-xs font-bold text-[#ffffff] font-display uppercase tracking-widest">
                       Follow-up AI Terminal Chat
@@ -6894,7 +6890,7 @@ export default function App() {
                         />
                       </div>
                       <div className="p-3 bg-cyber-card border border-cyber-border rounded-xl flex items-center gap-2">
-                        <Icons.RefreshCw className="w-3.5 h-3.5 text-cyber-purple animate-spin" />
+                        <Icons.RefreshCw className="w-3.5 h-3.5 text-cyber-cyan animate-spin" />
                         <span className="text-[10px] text-slate-500 font-mono animate-pulse">Analyzing neural paths...</span>
                       </div>
                     </div>
@@ -6903,18 +6899,18 @@ export default function App() {
                 </div>
 
                 {/* Message input compose form bar */}
-                <form onSubmit={handleSendChatMessage} className="p-4 bg-[#060611] border-t border-cyber-border flex gap-3.5">
+                <form onSubmit={handleSendChatMessage} className="p-4 bg-[#070D10] border-t border-cyber-border flex gap-3.5">
                   <input
                     type="text"
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Ask a clarifying question regarding the report parameters..."
-                    className="flex-1 bg-[#020205] border border-cyber-border rounded-lg px-4 py-2.5 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-purple focus:shadow-[0_0_8px_rgba(124,58,237,0.15)] transition-all placeholder:text-slate-755"
+                    className="flex-1 bg-[#020205] border border-cyber-border rounded-lg px-4 py-2.5 text-xs font-mono text-[#ffffff] focus:outline-none focus:border-cyber-cyan focus:shadow-[0_0_8px_rgba(0,229,255,0.15)] transition-all placeholder:text-slate-755"
                   />
                   <button
                     type="submit"
                     disabled={!chatInput.trim() || chatLoading}
-                    className="px-4 bg-cyber-purple hover:bg-indigo-600 disabled:opacity-40 text-white rounded-lg cursor-pointer transition-all flex items-center justify-center shadow-lg shadow-cyber-purple/10 disabled:pointer-events-none"
+                    className="px-4 bg-cyber-cyan hover:bg-cyan-600 disabled:opacity-40 text-black rounded-lg cursor-pointer transition-all flex items-center justify-center shadow-lg shadow-cyber-cyan/10 disabled:pointer-events-none font-bold"
                   >
                     <Icons.Send className="w-3.5 h-3.5" />
                   </button>

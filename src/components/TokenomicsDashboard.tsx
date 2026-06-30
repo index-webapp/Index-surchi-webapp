@@ -298,10 +298,10 @@ export default function TokenomicsDashboard({ themeMode = 'dark' }: TokenomicsDa
                   <div
                     key={i}
                     className={`w-[11.5px] h-[22px] sm:w-[13.5px] sm:h-[24px] ${
-                      themeMode === 'light' ? 'bg-[#1a1a1a]' : 'bg-[#a855f7]'
+                      themeMode === 'light' ? 'bg-[#1a1a1a]' : 'bg-[#00E5FF]'
                     }`}
                     style={{
-                      boxShadow: themeMode === 'dark' ? '0 0 10px rgba(168, 85, 247, 0.2)' : 'none'
+                      boxShadow: themeMode === 'dark' ? '0 0 10px rgba(0, 229, 255, 0.35)' : 'none'
                     }}
                   />
                 ))}
@@ -332,11 +332,11 @@ export default function TokenomicsDashboard({ themeMode = 'dark' }: TokenomicsDa
                   rel="noopener noreferrer"
                   className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all duration-300 transform active:scale-95 hover:scale-[1.01] no-underline border ${
                     themeMode === 'light'
-                      ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-500 hover:shadow-sm'
-                      : 'bg-[#120721]/90 hover:bg-[#1e0a36] text-[#a855f7] hover:text-[#c084fc] border-[#a855f7]/40 hover:border-[#c084fc] shadow-[0_0_12px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                      ? 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-500 hover:shadow-sm'
+                      : 'bg-[#051114]/90 hover:bg-[#0a2228] text-[#00E5FF] hover:text-[#52f2ff] border-[#00E5FF]/40 hover:border-[#52f2ff] shadow-[0_0_12px_rgba(0,229,255,0.1)] hover:shadow-[0_0_15px_rgba(0,229,255,0.25)]'
                   }`}
                 >
-                  <Icons.Compass className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-white' : 'text-[#a855f7]'}`} />
+                  <Icons.Compass className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-white' : 'text-[#00E5FF]'}`} />
                   <span>Token Explorer</span>
                   <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80" />
                 </a>

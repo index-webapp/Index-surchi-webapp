@@ -298,7 +298,7 @@ const TokenNameCell: React.FC<{
         </span>
       </div>
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="inline-flex items-center px-1.5 py-0.25 text-[9.5px] font-black font-sans uppercase rounded bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 leading-none shrink-0">
+        <span className="inline-flex items-center px-1.5 py-0.25 text-[9.5px] font-black font-sans uppercase rounded bg-cyan-500/10 border border-cyan-500/20 text-cyan-600 dark:text-[#00E5FF] leading-none shrink-0">
           {metadata.symbol}
         </span>
         <span className={`inline-flex items-center gap-1 px-1.5 py-0.25 text-[10px] font-extrabold font-mono rounded border capitalize ${getChainBadgeColor(chainId)}`}>
@@ -1009,8 +1009,8 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
     switch (normalized) {
       case 'solana':
         return isLight 
-          ? 'bg-purple-55 text-purple-700 border-purple-200 bg-purple-50' 
-          : 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+          ? 'bg-cyan-50 text-cyan-700 border-cyan-200' 
+          : 'bg-cyan-500/10 text-[#00E5FF] border-cyan-500/20';
       case 'ethereum':
         return isLight 
           ? 'bg-blue-55 text-blue-700 border-blue-200 bg-blue-50' 
@@ -1080,8 +1080,8 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
       }`}
     >
       {/* Compact Redesigned Header Row */}
-      <div className="flex items-center justify-between border-b pb-1.5 mb-2 border-cyber-border/20 gap-2">
-        <div className="flex items-center gap-2 min-w-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b pb-1.5 mb-2 border-cyber-border/20 gap-2.5">
+        <div className="flex items-center gap-2 min-w-0 self-start sm:self-auto">
           <Icons.TrendingUp className="w-4 h-4 text-cyber-cyan shrink-0" />
           <h3 className={`text-[11px] sm:text-xs font-mono font-black uppercase tracking-wider truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>
             Multi-Chain Live Trending Hub
@@ -1089,7 +1089,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
         </div>
 
         {/* Compact Chain Selector, Sort By dropdown, and Refresh Button container */}
-        <div className="flex flex-wrap items-center gap-2 relative shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 relative w-full sm:w-auto justify-start sm:justify-end">
           
           {/* Chain Selector */}
           <div className="relative" ref={dropdownRef}>
@@ -1099,17 +1099,17 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                 setDropdownOpen(!dropdownOpen);
                 setSearchTerm('');
               }}
-              className={`px-3 py-1.5 rounded border text-[10px] sm:text-[11.5px] font-mono font-black tracking-wider transition-all cursor-pointer flex items-center justify-between gap-2.5 min-w-[130px] sm:min-w-[155px] select-none ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded border text-[9.5px] sm:text-[11.5px] font-mono font-black tracking-wider transition-all cursor-pointer flex items-center justify-between gap-1.5 sm:gap-2.5 min-w-[115px] sm:min-w-[155px] select-none ${
                 isLight
                   ? 'bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-2xs'
                   : 'bg-[#121226]/80 hover:bg-[#1a1a36]/85 text-white border-cyber-border/40 hover:border-cyber-cyan/40 shadow-[0_0_8px_rgba(0,10,25,0.4)]'
               }`}
             >
-              <div className="flex items-center gap-2 truncate text-left">
-                <BlockchainIcon chainId={currentChain.id} className="w-[18px] h-[18px] sm:w-[22px] sm:h-[22px]" />
+              <div className="flex items-center gap-1 sm:gap-2 truncate text-left">
+                <BlockchainIcon chainId={currentChain.id} className="w-[15px] h-[15px] sm:w-[22px] sm:h-[22px]" />
                 <span className="uppercase truncate leading-none">{currentChain.name}</span>
               </div>
-              <Icons.ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180 text-cyber-cyan' : ''}`} />
+              <Icons.ChevronDown className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${dropdownOpen ? 'rotate-180 text-cyber-cyan' : ''}`} />
             </button>
 
             {/* Dropdown Options Popup with animation */}
@@ -1191,14 +1191,14 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
               onClick={() => {
                 setSortDropdownOpen(!sortDropdownOpen);
               }}
-              className={`px-3 py-1.5 rounded border text-[10px] sm:text-[11.5px] font-mono font-black tracking-wider transition-all cursor-pointer flex items-center justify-between gap-2.5 min-w-[145px] sm:min-w-[180px] select-none ${
+              className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded border text-[9.5px] sm:text-[11.5px] font-mono font-black tracking-wider transition-all cursor-pointer flex items-center justify-between gap-1.5 sm:gap-2.5 min-w-[125px] sm:min-w-[180px] select-none ${
                 isLight
                   ? 'bg-white hover:bg-slate-50 text-slate-800 border-slate-200 shadow-2xs'
                   : 'bg-[#121226]/80 hover:bg-[#1a1a36]/85 text-white border-cyber-border/40 hover:border-cyber-cyan/40 shadow-[0_0_8px_rgba(0,10,25,0.4)]'
               }`}
             >
-              <div className="flex items-center gap-2 truncate text-left">
-                <Icons.SlidersHorizontal className="w-[14px] h-[14px] text-cyber-cyan shrink-0" />
+              <div className="flex items-center gap-1 sm:gap-2 truncate text-left">
+                <Icons.SlidersHorizontal className="w-[12px] h-[12px] sm:w-[14px] sm:h-[14px] text-cyber-cyan shrink-0" />
                 <span className="uppercase truncate leading-none">
                   {
                     sortBy === 'trending' ? 'Sort By: Trending' :
@@ -1211,7 +1211,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                   }
                 </span>
               </div>
-              <Icons.ChevronDown className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${sortDropdownOpen ? 'rotate-180 text-cyber-cyan' : ''}`} />
+              <Icons.ChevronDown className={`w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${sortDropdownOpen ? 'rotate-180 text-cyber-cyan' : ''}`} />
             </button>
 
             {/* Dropdown Options Popup */}
@@ -1536,7 +1536,7 @@ export const SolanaTrendingTokens: React.FC<SolanaTrendingTokensProps> = ({
                           }}
                           className={`p-1.5 rounded cursor-pointer transition-all hover:scale-110 active:scale-95 shrink-0 ${
                             isLight
-                              ? 'bg-purple-50 hover:bg-purple-100 text-[#a855f7]'
+                              ? 'bg-cyan-50 hover:bg-cyan-100 text-cyan-600'
                               : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/20'
                           }`}
                           title={`Run instant security scan for ${token.symbol}`}

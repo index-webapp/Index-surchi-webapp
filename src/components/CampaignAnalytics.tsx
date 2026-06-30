@@ -14,7 +14,7 @@ export default function CampaignAnalytics({ onClose, themeMode = 'dark' }: Campa
   const stats = [
     { label: 'Total Engagement ROI', value: '2.45x', change: '+14.2%', profit: true, icon: Icons.TrendingUp, color: 'text-[#00ff88]' },
     { label: 'Aggregated Impressions', value: '354,203', change: '+28.5%', profit: true, icon: Icons.Eye, color: 'text-cyber-cyan' },
-    { label: 'Click-Through Rate (CTR)', value: '4.82%', change: '+1.12%', profit: true, icon: Icons.MousePointerClick, color: 'text-cyber-purple' },
+    { label: 'Click-Through Rate (CTR)', value: '4.82%', change: '+1.12%', profit: true, icon: Icons.MousePointerClick, color: 'text-cyber-cyan' },
     { label: 'Active Budget Spent', value: '$1,250 / $5,000', change: '25% Burnt', profit: false, icon: Icons.Coins, color: 'text-amber-400' }
   ];
 
@@ -226,10 +226,10 @@ export default function CampaignAnalytics({ onClose, themeMode = 'dark' }: Campa
               <div className="space-y-1">
                 <div className="flex justify-between font-bold text-slate-300">
                   <span>CPC Cost-Reduction Target</span>
-                  <span className="text-cyber-purple">$0.18 / $0.15 Goal</span>
+                  <span className="text-cyber-cyan">$0.18 / $0.15 Goal</span>
                 </div>
                 <div className="w-full bg-cyber-card-light/40 h-2 rounded-full overflow-hidden border border-cyber-border/30">
-                  <div className="bg-cyber-purple h-full shadow-[0_0_8px_var(--color-cyber-purple)]" style={{ width: '70%' }}></div>
+                  <div className="bg-cyber-cyan h-full shadow-[0_0_8px_var(--color-cyber-cyan)]" style={{ width: '70%' }}></div>
                 </div>
               </div>
             </div>

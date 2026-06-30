@@ -592,7 +592,7 @@ export default function UniversalTokenAnalyzer({
       }`}
     >
       {/* GLOW BAR */}
-      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-cyber-cyan via-cyber-purple to-[#ffaa00] rounded-t-2xl md:animate-pulse" />
+      <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-cyber-cyan via-cyber-cyan to-[#00ff88] rounded-t-2xl md:animate-pulse" />
 
       {/* HEADER CONTROLS ROW */}
       <div className="p-4 md:p-5 border-b border-cyber-border/40 flex flex-wrap items-center justify-between gap-3.5">
@@ -684,7 +684,7 @@ export default function UniversalTokenAnalyzer({
             className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg text-[9.5px] font-mono font-black border transition-all cursor-pointer ${
               themeMode === 'light'
                 ? 'bg-indigo-600 hover:bg-indigo-700 border-indigo-500 text-white shadow-sm'
-                : 'bg-cyber-purple/15 hover:bg-cyber-purple/25 border-cyber-purple/35 text-purple-300'
+                : 'bg-cyber-cyan/15 hover:bg-cyber-cyan/25 border-cyber-cyan/35 text-cyber-cyan'
             }`}
           >
             {pdfGenerating ? (
@@ -762,7 +762,7 @@ export default function UniversalTokenAnalyzer({
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <span className="text-[8.5px] font-mono bg-cyber-purple/20 border border-cyber-purple/30 text-purple-400 px-2 py-0.5 rounded leading-none font-bold animate-pulse">
+            <span className="text-[8.5px] font-mono bg-cyber-cyan/20 border border-cyber-cyan/30 text-cyber-cyan px-2 py-0.5 rounded leading-none font-bold animate-pulse">
               SYNCING BLOCKCHAIN
             </span>
           </div>
@@ -833,7 +833,7 @@ export default function UniversalTokenAnalyzer({
                       onClick={() => setShowMcapOverlay(!showMcapOverlay)}
                       className={`px-2 py-0.5 rounded border transition-colors cursor-pointer ${
                         showMcapOverlay
-                          ? 'bg-cyber-purple/20 text-purple-300 border-cyber-purple'
+                          ? 'bg-cyber-cyan/20 text-cyber-cyan border-cyber-cyan'
                           : 'bg-slate-900 border-cyber-border/30 text-slate-450'
                       }`}
                     >
@@ -879,7 +879,7 @@ export default function UniversalTokenAnalyzer({
                     onClick={() => setViewMode('line')}
                     className={`px-2 py-0.5 text-[9px] font-bold rounded transition-all cursor-pointer flex items-center gap-1 ${
                       viewMode === 'line'
-                        ? 'bg-cyber-purple text-white shadow-sm'
+                        ? 'bg-cyber-cyan text-black shadow-sm font-semibold'
                         : 'text-slate-400 hover:text-white'
                     }`}
                   >
@@ -926,7 +926,7 @@ export default function UniversalTokenAnalyzer({
                                 </div>
                                 <div className="pt-1 text-[8.5px] text-slate-500 border-t border-white/5 flex justify-between">
                                   <span>VOL:</span>
-                                  <span className="text-cyber-purple font-black">${matchPoint.volume.toLocaleString()}</span>
+                                  <span className="text-cyber-cyan font-black">${matchPoint.volume.toLocaleString()}</span>
                                 </div>
                               </div>
                             );
@@ -991,7 +991,7 @@ export default function UniversalTokenAnalyzer({
                               <div className="bg-[#050614] p-2 rounded border border-cyber-cyan/35 text-[9px] font-mono text-left">
                                 <span className="text-slate-400 uppercase tracking-widest">{payload[0].payload.date}</span>
                                 <div className="text-white font-extrabold mt-1">Price: ${formatAbbreviatedPrice(payload[0].value)}</div>
-                                <div className="text-[8.5px] text-cyber-purple font-bold">Vol: ${payload[0].payload.volume.toLocaleString()}</div>
+                                <div className="text-[8.5px] text-cyber-cyan font-bold">Vol: ${payload[0].payload.volume.toLocaleString()}</div>
                               </div>
                             );
                           }
@@ -1203,7 +1203,7 @@ export default function UniversalTokenAnalyzer({
                         iconColor = 'text-indigo-400 bg-indigo-400/10 border-indigo-400/20';
                       } else if (ex.dexId === 'raydium') {
                         IconComp = Icons.Orbit;
-                        iconColor = 'text-purple-400 bg-purple-400/10 border-purple-400/20';
+                        iconColor = 'text-cyan-400 bg-cyan-400/10 border-cyan-400/20';
                       } else if (ex.dexId === 'jupiter') {
                         IconComp = Icons.Zap;
                         iconColor = 'text-emerald-400 bg-emerald-400/10 border-emerald-400/20';
@@ -1278,7 +1278,7 @@ export default function UniversalTokenAnalyzer({
                           <div
                             key={i}
                             className={`h-[18px] flex-1 min-w-[7px] ${
-                              active ? 'bg-cyber-purple' : 'bg-rose-500/35'
+                              active ? 'bg-cyber-cyan' : 'bg-rose-500/35'
                             }`}
                           />
                         );
@@ -1331,14 +1331,14 @@ export default function UniversalTokenAnalyzer({
                 <div className="p-3 bg-[#03030d] border border-cyber-border/40 rounded-xl space-y-2 text-left">
                   <div className="flex justify-between items-center text-[8.5px] uppercase text-slate-500 font-black">
                     <span>authenticity</span>
-                    <Icons.ShieldCheck className="w-3.5 h-3.5 text-cyber-purple shrink-0" />
+                    <Icons.ShieldCheck className="w-3.5 h-3.5 text-cyber-cyan shrink-0" />
                   </div>
                   <div>
                     <span className="text-[10px] text-slate-450 block">Ownership Trust</span>
-                    <span className="text-xl font-sans font-black text-cyber-purple">{metrics.trustScore}/100</span>
+                    <span className="text-xl font-sans font-black text-cyber-cyan">{metrics.trustScore}/100</span>
                   </div>
                   <div className="w-full bg-slate-900 h-1 rounded overflow-hidden">
-                    <div className="bg-cyber-purple h-full" style={{ width: `${metrics.trustScore}%` }} />
+                    <div className="bg-cyber-cyan h-full" style={{ width: `${metrics.trustScore}%` }} />
                   </div>
                 </div>
 
@@ -1452,14 +1452,14 @@ export default function UniversalTokenAnalyzer({
                 <div className="bg-[#03030d] border border-cyber-border/40 rounded-xl p-4 text-left space-y-3 font-mono">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black uppercase text-white">Whale Distribution Profile</span>
-                    <Icons.Disc className="w-4 h-4 text-cyber-purple animate-spin" />
+                    <Icons.Disc className="w-4 h-4 text-cyber-cyan animate-spin" />
                   </div>
 
                   {/* Custom SVG Distribution Pie Chart Representation */}
                   <div className="h-44 flex items-center justify-center relative">
                     <svg className="w-36 h-36 transform -rotate-90">
                       {/* Sector 1: Community (50%) */}
-                      <circle cx="72" cy="72" r="60" fill="transparent" stroke="#a855f7" strokeWidth="15" strokeDasharray="376.9" strokeDashoffset="0" />
+                      <circle cx="72" cy="72" r="60" fill="transparent" stroke="#00A3FF" strokeWidth="15" strokeDasharray="376.9" strokeDashoffset="0" />
                       {/* Sector 2: Liquidity (20%) */}
                       <circle cx="72" cy="72" r="60" fill="transparent" stroke="#00e5ff" strokeWidth="15" strokeDasharray="376.9" strokeDashoffset={376.9 * 0.5} />
                       {/* Sector 3: Dev alloc (12%) */}
@@ -1477,7 +1477,7 @@ export default function UniversalTokenAnalyzer({
 
                   <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-400 pt-2 border-t border-white/5">
                     <div className="flex items-center gap-1.5">
-                      <span className="w-2.5 h-2.5 bg-cyber-purple inline-block rounded-sm" />
+                      <span className="w-2.5 h-2.5 bg-[#00A3FF] inline-block rounded-sm" />
                       <span>Community: 50%</span>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -1588,10 +1588,10 @@ export default function UniversalTokenAnalyzer({
                   <div>
                     <div className="flex justify-between text-[11px] text-slate-400 pb-1">
                       <span>Staking Reserves & Yield Pool</span>
-                      <span className="text-cyber-purple font-bold">20.00%</span>
+                      <span className="text-cyber-cyan font-bold">20.00%</span>
                     </div>
                     <div className="w-full bg-slate-900 h-2 rounded overflow-hidden">
-                      <div className="bg-cyber-purple h-full" style={{ width: '20%' }} />
+                      <div className="bg-cyber-cyan h-full" style={{ width: '20%' }} />
                     </div>
                   </div>
 
@@ -1644,7 +1644,7 @@ export default function UniversalTokenAnalyzer({
           {activeTab === 'ai' && (
             <div className="bg-[#03030d] border border-cyber-border/40 rounded-xl p-4 text-left font-sans text-xs space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-white/5">
-                <Icons.Brain className="w-4 h-4 text-cyber-purple shrink-0 animate-pulse" />
+                <Icons.Brain className="w-4 h-4 text-cyber-cyan shrink-0 animate-pulse" />
                 <h4 className="text-xs font-mono font-black uppercase text-white">
                   Surchi AI Deep Core Knowledge & Intelligence
                 </h4>
@@ -1660,7 +1660,7 @@ export default function UniversalTokenAnalyzer({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h5 className="font-mono font-black text-[10px] text-cyber-purple uppercase tracking-wider pb-1">Primary Utility & Purpose</h5>
+                    <h5 className="font-mono font-black text-[10px] text-cyber-cyan uppercase tracking-wider pb-1">Primary Utility & Purpose</h5>
                     <p className="text-[11.5px] leading-relaxed">
                       Used specifically as fuel for algorithmic smart routing execution nodes, staking validation layers, and dynamic gas-burn incentives inside user-facing interactive workspaces. It functions as the atomic unit of reward throughout the decentralized ecosystem.
                     </p>
@@ -1755,11 +1755,11 @@ export default function UniversalTokenAnalyzer({
                 rel="noopener noreferrer"
                 className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-mono font-bold tracking-wider uppercase transition-all duration-300 transform active:scale-95 hover:scale-[1.01] no-underline border ${
                   themeMode === 'light'
-                    ? 'bg-purple-600 hover:bg-purple-700 text-white border-purple-500 hover:shadow-sm'
-                    : 'bg-[#120721]/90 hover:bg-[#1e0a36] text-[#a855f7] hover:text-[#c084fc] border-[#a855f7]/40 hover:border-[#c084fc] shadow-[0_0_12px_rgba(168,85,247,0.1)] hover:shadow-[0_0_15px_rgba(168,85,247,0.25)]'
+                    ? 'bg-cyan-600 hover:bg-cyan-700 text-white border-cyan-500 hover:shadow-sm'
+                    : 'bg-[#051114]/90 hover:bg-[#0a2228] text-[#00E5FF] hover:text-[#52f2ff] border-[#00E5FF]/40 hover:border-[#52f2ff] shadow-[0_0_12px_rgba(0,229,255,0.1)] hover:shadow-[0_0_15px_rgba(0,229,255,0.25)]'
                 }`}
               >
-                <Icons.Compass className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-white' : 'text-[#a855f7]'}`} />
+                <Icons.Compass className={`w-4 h-4 shrink-0 ${themeMode === 'light' ? 'text-white' : 'text-[#00E5FF]'}`} />
                 <span>Token Explorer</span>
                 <Icons.ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80" />
               </a>

@@ -225,7 +225,7 @@ export default function LiquidityLocker({ onClose, themeMode = 'dark' }: Liquidi
               </div>
 
               <div className="flex items-start gap-2.5">
-                <Icons.Share2 className="w-4 h-4 text-cyber-purple shrink-0" />
+                <Icons.Share2 className="w-4 h-4 text-cyber-cyan shrink-0" />
                 <div>
                   <strong className="text-slate-200 block">Shareable Lock Status PDF</strong>
                   <span className="text-slate-500">Export dynamic, branded visual timelock receipts to post across telegram channels in one click.</span>

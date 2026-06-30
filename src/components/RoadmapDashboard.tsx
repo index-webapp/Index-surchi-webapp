@@ -62,9 +62,9 @@ export default function RoadmapDashboard() {
       num: 'PHASE 2',
       title: 'Intelligence Scaling',
       timeline: 'Q3–Q4 2026',
-      icon: <Icons.Cpu className="w-5 h-5 text-cyber-purple" />,
-      colorClass: 'border-cyber-purple/35 shadow-[0_0_15px_rgba(168,85,247,0.05)]',
-      dotColor: 'bg-cyber-purple',
+      icon: <Icons.Cpu className="w-5 h-5 text-cyber-cyan" />,
+      colorClass: 'border-cyber-cyan/35 shadow-[0_0_15px_rgba(0,229,255,0.05)]',
+      dotColor: 'bg-cyber-cyan',
       items: [
         'Sentinel V1 Beta launch (Alpha + Liquidity + Execution agents live)',
         'Sentiment intelligence engine activation (live social data processing)',
@@ -129,11 +129,11 @@ export default function RoadmapDashboard() {
           id="export-roadmap-btn"
           onClick={handleExport}
           disabled={isExporting}
-          className="inline-flex items-center gap-2 px-3.5 py-2 text-[10px] font-mono font-black uppercase tracking-widest bg-cyber-purple/15 hover:bg-cyber-purple text-cyber-purple hover:text-white border border-cyber-purple/35 hover:border-cyber-purple rounded-lg transition-all duration-300 disabled:opacity-50 select-none cursor-pointer"
+          className="inline-flex items-center gap-2 px-3.5 py-2 text-[10px] font-mono font-black uppercase tracking-widest bg-cyber-cyan/15 hover:bg-cyber-cyan text-cyber-cyan hover:text-black border border-cyber-cyan/35 hover:border-cyber-cyan rounded-lg transition-all duration-300 disabled:opacity-50 select-none cursor-pointer"
         >
           {isExporting ? (
             <>
-              <Icons.Loader2 className="w-3.5 h-3.5 animate-spin text-cyber-purple" />
+              <Icons.Loader2 className="w-3.5 h-3.5 animate-spin text-cyber-cyan" />
               <span>EXPORTING SYSTEM MAP...</span>
             </>
           ) : (

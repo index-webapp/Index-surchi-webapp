@@ -238,7 +238,7 @@ export default function SurchiTermsModal({ isOpen, onAccept, themeMode = 'dark' 
                     <p className="text-[10.5px] opacity-80">Network congestion, blockchain hard forks, distributed consensus failures, validator uptime issues, and delayed transaction confirmations.</p>
                   </div>
                   <div className={`p-2.5 rounded-lg border ${isLight ? 'bg-slate-100/70 border-slate-200' : 'bg-white/5 border-white/5'}`}>
-                    <span className="font-bold text-[10.5px] uppercase font-mono block text-purple-500">Security Risks</span>
+                    <span className="font-bold text-[10.5px] uppercase font-mono block text-[#00E5FF]">Security Risks</span>
                     <p className="text-[10.5px] opacity-80">Wallet compromise, private key or seed phrase loss, phishing attacks, malware, unauthorized account access, and host hacks.</p>
                   </div>
                   <div className={`p-2.5 rounded-lg border ${isLight ? 'bg-slate-100/70 border-slate-200' : 'bg-white/5 border-white/5'}`}>

@@ -38,15 +38,15 @@ export default function IntelligenceArchives({
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded text-[10px] font-mono font-bold uppercase tracking-widest ${
           isLight
             ? 'bg-indigo-50 border border-indigo-250 text-indigo-750'
-            : 'bg-[#1b0a23] border border-cyber-purple/30 text-cyber-purple shadow-[0_0_8px_rgba(235,0,255,0.05)]'
+            : 'bg-[#051114] border border-cyber-cyan/30 text-cyber-cyan shadow-[0_0_8px_rgba(0,229,255,0.05)]'
         }`}>
-          <Icons.Archive className="w-3.5 h-3.5 text-cyber-purple animate-pulse" /> security storage unit
+          <Icons.Archive className="w-3.5 h-3.5 text-cyber-cyan animate-pulse" /> security storage unit
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <h2 className={`text-2xl md:text-3xl font-bold tracking-tight font-display flex items-center gap-3 ${
             isLight ? 'text-slate-900 font-extrabold' : 'text-[#ffffff]'
           }`}>
-            <Icons.FolderOpen className="w-7 h-7 text-cyber-purple" />
+            <Icons.FolderOpen className="w-7 h-7 text-cyber-cyan" />
             Intelligence Archives Hub
           </h2>
           <button
@@ -109,10 +109,10 @@ export default function IntelligenceArchives({
                         <div className="flex items-center gap-2">
                           <span className={`p-1 rounded bg-[#01010c] border border-cyber-border/40 text-[#ffffff]`}>
                             {item.moduleId === 'token_analyzer' && <Icons.Activity className="w-3.5 h-3.5 text-cyber-cyan" />}
-                            {item.moduleId === 'neural_sentiment_engine' && <Icons.Brain className="w-3.5 h-3.5 text-cyber-purple" />}
+                            {item.moduleId === 'neural_sentiment_engine' && <Icons.Brain className="w-3.5 h-3.5 text-cyber-cyan" />}
                             {item.moduleId === 'smart_money_tracker' && <Icons.Wallet className="w-3.5 h-3.5 text-cyber-cyan" />}
                             {item.moduleId === 'rug_radar' && <Icons.Radio className="w-3.5 h-3.5 text-cyber-green" />}
-                            {item.moduleId === 'agent_deployer' && <Icons.Cpu className="w-3.5 h-3.5 text-cyber-purple" />}
+                            {item.moduleId === 'agent_deployer' && <Icons.Cpu className="w-3.5 h-3.5 text-cyber-cyan" />}
                             {!['token_analyzer', 'neural_sentiment_engine', 'smart_money_tracker', 'rug_radar', 'agent_deployer'].includes(item.moduleId) && <Icons.Compass className="w-3.5 h-3.5 text-slate-400" />}
                           </span>
                           <span className="font-bold text-slate-205">{item.moduleName}</span>

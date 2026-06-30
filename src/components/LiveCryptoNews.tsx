@@ -596,7 +596,7 @@ export default function LiveCryptoNews({ themeMode }: { themeMode?: 'dark' | 'li
       }`}>
         {/* News logo and live info */}
         <div className="flex items-center gap-2 text-left">
-          <div className="p-1 px-1.5 bg-gradient-to-br from-cyber-cyan to-cyber-purple text-[#050510] rounded text-xs select-none">
+          <div className="p-1 px-1.5 bg-cyber-cyan text-[#050510] rounded text-xs select-none">
             <Newspaper className="w-3.5 h-3.5" />
           </div>
           <div className="flex items-center gap-2">
@@ -683,7 +683,7 @@ export default function LiveCryptoNews({ themeMode }: { themeMode?: 'dark' | 'li
                 category === cat.id
                   ? (isLight
                       ? 'bg-indigo-600 border-indigo-600 text-white shadow-sm font-semibold'
-                      : 'bg-cyber-purple border-cyber-purple text-white shadow-[0_0_8px_rgba(124,58,237,0.25)]')
+                      : 'bg-cyber-cyan border-cyber-cyan text-black shadow-[0_0_8px_rgba(0,229,255,0.25)]')
                   : (isLight
                       ? 'bg-white border-slate-200 text-slate-600 hover:text-indigo-600 hover:border-indigo-350'
                       : 'bg-[#050511] border-cyber-border text-slate-400 hover:text-white hover:border-[#00e5ff4d]')

@@ -712,7 +712,7 @@ DECIDED INTEGRITY STATUS: RPC SECURED LEDGER
                           {metrics.untrackedPct.toFixed(1)}%
                         </span>
                       </div>
-                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-purple-50/70 border-purple-200 text-purple-700 shadow-sm' : 'bg-[#8b5cf6]/10 border border-[#8b5cf6]/20'}`}>
+                      <div className={`flex-1 border rounded p-1.5 flex flex-col justify-between ${isLight ? 'bg-cyan-50/70 border-cyan-200 text-cyan-700 shadow-sm' : 'bg-[#00E5FF]/10 border border-[#00E5FF]/20'}`}>
                         <span className="text-[7px] font-bold font-mono font-mono">WALLETS 51-100</span>
                         <span className={`text-xs font-black block ${textWhiteDark}`}>
                           {pieChartData.find(d => d?.name?.includes("51-100"))?.value?.toFixed(1) || '0.0'}%

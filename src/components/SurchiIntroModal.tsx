@@ -382,7 +382,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
         
         {/* Header Ambient Glow */}
         {!isLight && (
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-32 bg-gradient-to-b from-cyber-purple/15 to-transparent pointer-events-none rounded-full blur-2xl"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-80 h-32 bg-gradient-to-b from-cyber-cyan/15 to-transparent pointer-events-none rounded-full blur-2xl"></div>
         )}
 
         {/* Modal Header */}
@@ -391,7 +391,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
         }`}>
           <div className="flex items-center gap-2.5 text-left">
             <span className={`p-1.5 rounded border ${
-              isLight ? 'bg-purple-50 border-purple-200 text-[#a855f7]' : 'bg-cyber-purple/15 border-cyber-purple/30 text-cyber-purple'
+              isLight ? 'bg-cyan-50 border-cyan-200 text-cyan-600' : 'bg-cyber-cyan/15 border-cyber-cyan/30 text-cyber-cyan'
             }`}>
               <Icons.Cpu className="w-5 h-5 animate-pulse" />
             </span>
@@ -440,8 +440,8 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
                 className={`flex items-center gap-2 px-3.5 py-2 text-[10px] sm:text-xs font-mono font-bold tracking-wider rounded-lg border whitespace-nowrap cursor-pointer transition-all select-none hover:scale-[1.01] active:scale-[0.99] ${
                   isSelected
                     ? isLight
-                      ? 'bg-purple-600 border-purple-500 text-white shadow-sm shadow-purple-200'
-                      : 'bg-cyber-purple border-cyber-purple/80 text-white shadow-[0_0_12px_rgba(168,85,247,0.3)]'
+                      ? 'bg-cyan-600 border-cyan-500 text-white shadow-sm shadow-cyan-200'
+                      : 'bg-[#00E5FF] border-[#00E5FF]/80 text-black shadow-[0_0_12px_rgba(0,229,255,0.3)]'
                     : isLight
                       ? 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
                       : 'bg-cyber-card/60 border-cyber-border hover:bg-cyber-card-light text-slate-400'
@@ -465,10 +465,10 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
               <div className={`p-4 rounded-xl border flex items-center justify-between gap-4 text-xs font-sans ${
                 isLight 
                   ? 'bg-indigo-50/50 border-indigo-200 text-slate-800' 
-                  : 'bg-cyber-purple/8 border-cyber-purple/20 text-slate-300'
+                  : 'bg-cyber-cyan/8 border-cyber-cyan/20 text-slate-300'
               }`}>
                 <div className="flex items-center gap-2.5">
-                  <div className={`p-1.5 rounded-lg shrink-0 ${isLight ? 'bg-indigo-100 text-indigo-600' : 'bg-cyber-purple/20 text-cyber-cyan'}`}>
+                  <div className={`p-1.5 rounded-lg shrink-0 ${isLight ? 'bg-indigo-100 text-indigo-600' : 'bg-cyber-cyan/20 text-cyber-cyan'}`}>
                     <Icons.Lightbulb className="w-4.5 h-4.5" />
                   </div>
                   <p className="text-[11.5px] leading-relaxed">
@@ -485,10 +485,10 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
 
               {/* Core Statement Card */}
               <div id="surchi-mission-statement" className={`p-5 rounded-xl border relative overflow-hidden ${
-                isLight ? 'border-purple-200 bg-purple-50/50 text-slate-800' : 'border-cyber-purple/20 bg-cyber-purple/5'
+                isLight ? 'border-cyan-200 bg-cyan-50/50 text-slate-800' : 'border-cyber-cyan/20 bg-cyber-cyan/5'
               }`}>
                 <div className={`absolute top-0 right-0 p-1 font-mono text-[7px] font-bold ${
-                  isLight ? 'text-purple-400' : 'text-cyber-purple/40'
+                  isLight ? 'text-cyan-400' : 'text-cyber-cyan/40'
                 }`}>CORE-METRIC-01</div>
                 <p className="font-medium leading-relaxed select-text text-sm sm:text-base">
                   <strong className={isLight ? 'text-slate-900' : 'text-white'}>SURCHI</strong> is an AI-powered DeFi ecosystem built on Solana, created to simplify the crypto experience through intelligent tools, AI-driven analytics, automation, and smart blockchain insights.
@@ -545,7 +545,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
                     'Platform Participation', 'Community Rewards', 'Future Integrations'
                   ].map((item, idx) => (
                     <div key={idx} className="flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isLight ? 'bg-purple-500' : 'bg-cyber-purple'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isLight ? 'bg-cyan-500' : 'bg-cyber-cyan'}`}></span>
                       <span>{item}</span>
                     </div>
                   ))}
@@ -579,8 +579,8 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
                   }}
                   className={`px-3 py-1.5 rounded-lg text-[10px] uppercase font-mono font-bold border transition-all flex items-center gap-1.5 hover:scale-[1.01] active:scale-[0.99] cursor-pointer shadow-xs ${
                     isLight
-                      ? 'bg-purple-50 hover:bg-purple-100/80 text-[#a855f7] border-purple-250 border-purple-200'
-                      : 'bg-cyber-purple/10 hover:bg-cyber-purple/20 text-[#a855f7] hover:text-[#c084fc] border-[#a855f7]/30'
+                      ? 'bg-cyan-50 hover:bg-cyan-100/80 text-cyan-600 border-cyan-250 border-cyan-200'
+                      : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/20 text-[#00E5FF] hover:text-[#52f2ff] border-[#00E5FF]/30'
                   }`}
                 >
                   <Icons.Info className="w-3.5 h-3.5" />
@@ -784,7 +784,7 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
             <div className="space-y-6 animate-fade-in text-left">
               {/* Core Statement Card */}
               <div className={`p-5 rounded-xl border relative overflow-hidden flex flex-col sm:flex-row items-center gap-5 ${
-                isLight ? 'border-purple-200 bg-purple-50/50 text-slate-850' : 'border-cyber-purple/20 bg-[#090924]/40 text-slate-300'
+                isLight ? 'border-cyan-200 bg-cyan-50/50 text-slate-850' : 'border-cyber-cyan/20 bg-[#051114]/40 text-slate-300'
               }`}>
                 <div className={`w-16 h-16 rounded-2xl border overflow-hidden flex items-center justify-center p-0.5 shrink-0 ${
                   isLight ? 'border-slate-200 bg-slate-50' : 'border-cyber-border bg-[#0d0d1e] shadow-[0_0_20px_rgba(0,255,136,0.12)]'
@@ -943,8 +943,8 @@ export default function SurchiIntroModal({ isOpen, onClose, themeMode = 'dark', 
             onClick={onClose}
             className={`px-4 py-2 rounded-lg cursor-pointer transition-all uppercase tracking-wider font-bold select-none text-[10px] ${
               isLight 
-                ? 'bg-purple-100 hover:bg-purple-200 border border-purple-200 text-[#a855f7] hover:text-purple-800' 
-                : 'bg-cyber-purple/10 hover:bg-cyber-purple/25 border border-cyber-purple/35 text-cyber-purple hover:text-white'
+                ? 'bg-cyan-100 hover:bg-cyan-200 border border-cyan-200 text-cyan-600 hover:text-cyan-800' 
+                : 'bg-cyber-cyan/10 hover:bg-cyber-cyan/25 border border-cyber-cyan/35 text-cyber-cyan hover:text-black'
             }`}
           >
             Acknowledge & Close

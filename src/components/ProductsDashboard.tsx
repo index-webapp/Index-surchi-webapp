@@ -214,7 +214,7 @@ export default function ProductsDashboard() {
         </div>
 
         {/* Display core card */}
-        <div className="md:col-span-2 p-5 sm:p-6 bg-cyber-card border border-cyber-purple/30 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(110,68,255,0.04)] relative">
+        <div className="md:col-span-2 p-5 sm:p-6 bg-cyber-card border border-cyber-purple/30 rounded-xl flex flex-col justify-between shadow-[0_0_20px_rgba(0,229,255,0.04)] relative">
           <div className="absolute top-0 right-1/2 translate-x-1/2 w-64 h-32 bg-cyber-purple/5 pointer-events-none rounded-full blur-2xl"></div>
 
           <div className="space-y-4">

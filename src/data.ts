@@ -44,7 +44,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Compute Neural Sentiment',
     statusText: 'Mapping Cognitive Chatter Channels...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'smart_money_tracker',
@@ -95,7 +95,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Compile & Launch Autonomous Agent',
     statusText: 'Synthesizing Agent Neural Nodes...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'smart_auditor',
@@ -131,7 +131,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Execute Deep Security Scan',
     statusText: 'Auditing Security Vectors...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'rug_detector',
@@ -223,7 +223,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Generate Ad Copies',
     statusText: 'Crafting Viral Narratives...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'airdrop_builder',
@@ -299,7 +299,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Generate Whitepaper Doc',
     statusText: 'Structuring Technical Document...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'tokenomics_designer',
@@ -394,7 +394,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Compile Solidity Code',
     statusText: 'Generating Secure Solidity blocks...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'branding_generator',
@@ -474,7 +474,7 @@ export const MODULES: ModuleConfig[] = [
     ],
     buttonText: 'Draft Tweet Sets',
     statusText: 'Optimizing Narrative CTR Metrics...',
-    accentColor: 'purple'
+    accentColor: 'cyan'
   },
   {
     id: 'competitor_analysis',

@@ -1077,7 +1077,7 @@ contract ${name.replace(/\s+/g, '')} is ERC20, Ownable {
         <div className="space-y-1">
           <div className="flex justify-between">
             <span className="text-slate-450">Burn Token rate:</span>
-            <span className="text-cyber-purple font-bold">{burnRate}%</span>
+            <span className="text-cyber-cyan font-bold">{burnRate}%</span>
           </div>
           <input
             type="range"
@@ -1085,14 +1085,14 @@ contract ${name.replace(/\s+/g, '')} is ERC20, Ownable {
             max="10"
             value={burnRate}
             onChange={(e) => setBurnRate(parseInt(e.target.value))}
-            className="w-full accent-cyber-purple cursor-pointer"
+            className="w-full accent-cyber-cyan cursor-pointer"
           />
         </div>
         <div className="space-y-1 text-left">
           <span className="text-slate-450 block mb-1">Anti-Bot Locks trigger:</span>
           <button
             onClick={() => setAntiBot(!antiBot)}
-            className={`w-full py-1.5 rounded transition-all cursor-pointer font-bold text-xs ${antiBot ? 'bg-cyber-purple/20 text-cyber-purple border border-cyber-purple/50' : 'bg-[#12122b] text-slate-500 border border-cyber-border'}`}
+            className={`w-full py-1.5 rounded transition-all cursor-pointer font-bold text-xs ${antiBot ? 'bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/50' : 'bg-[#12122b] text-slate-500 border border-cyber-border'}`}
           >
             {antiBot ? 'ACTIVE / SECURED' : 'PAUSED'}
           </button>
@@ -1512,7 +1512,7 @@ function MarketSentimentDashboard({ payload, content }: SubComponentProps) {
             Market Sentiment Analyzer Hub
           </h3>
           {topicContext && (
-            <span className="text-[10px] text-cyber-purple animate-pulse mt-0.5 block">
+            <span className="text-[10px] text-cyber-cyan animate-pulse mt-0.5 block">
               💡 Target Context active: Analyzing Hype & Sentiment for &quot;{topicContext}&quot;
             </span>
           )}
@@ -1594,7 +1594,7 @@ function MarketSentimentDashboard({ payload, content }: SubComponentProps) {
           <div>
             <span className="text-[9px] text-slate-500 uppercase font-bold tracking-widest block">SOCIAL DISCOURSE VOLUME</span>
             <div className="flex items-baseline gap-1 mt-1.5">
-              <span className="text-2xl font-black text-cyber-purple">{activeData.socialVolume}K</span>
+              <span className="text-2xl font-black text-cyber-cyan">{activeData.socialVolume}K</span>
               <span className="text-xs text-cyber-green font-bold flex items-center ml-1">
                 <Icons.TrendingUp className="w-3.5 h-3.5 mr-0.5 text-cyber-green" />
                 +{activeData.volumeChange24h}%
@@ -1674,7 +1674,7 @@ function MarketSentimentDashboard({ payload, content }: SubComponentProps) {
         {/* Social Sentiment Heatmap */}
         <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-2.5">
           <h4 className="text-xs font-bold text-slate-300 uppercase flex items-center gap-1.5">
-            <Icons.Globe className="w-4 h-4 text-cyber-purple" />
+            <Icons.Globe className="w-4 h-4 text-cyber-cyan" />
             Social Platform Heatmap
           </h4>
           <div className="space-y-3 pt-1">
@@ -1926,7 +1926,7 @@ function MarketSentimentDashboard({ payload, content }: SubComponentProps) {
       <div className="p-4 bg-cyber-card border border-cyber-border rounded-xl text-left space-y-4">
         <div className="border-b border-cyber-border/40 pb-2">
           <h4 className="text-xs font-bold text-slate-200 uppercase flex items-center gap-1.5">
-            <Icons.Bell className="w-4 h-4 text-cyber-purple" />
+            <Icons.Bell className="w-4 h-4 text-cyber-cyan" />
             AI Intelligence Pulse Alerts (Push & Setup Hooks)
           </h4>
           <span className="text-[9.5px] text-slate-500 block">Setup decentralized webhooks to ping your workspace immediately during extreme hype spikes or high-volume dumps</span>
@@ -2000,15 +2000,15 @@ function TweetWriterDashboard({ content, onRefresh }: TweetWriterProps) {
     <div className="bg-[#04040a] rounded-xl border border-cyber-border p-4 sm:p-6 space-y-6 text-[#ffffff] font-mono text-left select-text">
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-cyber-border pb-4">
         <div>
-          <span className="text-[10px] text-cyber-purple tracking-widest uppercase font-bold block">social expansion copywriting dashboards</span>
+          <span className="text-[10px] text-cyber-cyan tracking-widest uppercase font-bold block">social expansion copywriting dashboards</span>
           <h3 className="text-base font-bold text-white uppercase flex items-center gap-2">
-            <Icons.MessageSquare className="w-5 h-5 text-cyber-purple" />
+            <Icons.MessageSquare className="w-5 h-5 text-cyber-cyan" />
             Surchi Thread Generator suite
           </h3>
         </div>
         <button
           onClick={() => onRefresh()}
-          className="text-[10px] text-cyber-purple hover:text-cyber-cyan font-mono"
+          className="text-[10px] text-cyber-cyan hover:text-cyber-cyan font-mono"
         >
           [⚡ BAKE FRESH COPIES]
         </button>
