@@ -22,6 +22,7 @@ import { AnalysisResult, ChatMessage } from './types';
 import LiveCryptoNews from './components/LiveCryptoNews';
 import TokenomicsDashboard from './components/TokenomicsDashboard';
 import StakingDashboard from './components/StakingDashboard';
+import PredictionsDashboard from './components/PredictionsDashboard';
 import PartnershipModal from './components/PartnershipModal';
 import SurchiIntroModal from './components/SurchiIntroModal';
 import SurchiTermsModal from './components/SurchiTermsModal';
@@ -3793,7 +3794,7 @@ export default function App() {
 
 
   const [activeModuleId, setActiveModuleId] = useState('token_analyzer');
-  const [activeCustomPage, setActiveCustomPage] = useState<'create_ad' | 'create_token' | 'staking' | 'crypto_news' | 'surchi_live' | null>(null);
+  const [activeCustomPage, setActiveCustomPage] = useState<'create_ad' | 'create_token' | 'staking' | 'crypto_news' | 'surchi_live' | 'predictions' | null>(null);
   const [surchiMetrics, setSurchiMetrics] = useState({
     priceUsd: 0,
     marketCap: 0,
@@ -5746,6 +5747,50 @@ export default function App() {
                             }`}>LIVE FEED</span>
                           )}
                         </button>
+
+                        {/* Custom Predictions button */}
+                        <button
+                          key="custom_predictions"
+                          onClick={() => {
+                            setActiveCustomPage('predictions');
+                            setCurrentResult(null); // Clear previous results to show ONLY its own page
+                            setIsMenuOpen(false);
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-medium transition-all group cursor-pointer text-left border ${
+                            activeCustomPage === 'predictions'
+                              ? themeMode === 'light'
+                                ? 'bg-indigo-50 text-indigo-700 border-indigo-200 shadow-sm'
+                                : 'bg-cyber-card-light text-[#ffffff] border-cyber-cyan/40 shadow-[0_0_8px_rgba(0,229,255,0.15)]'
+                              : themeMode === 'light'
+                                ? 'text-slate-600 hover:text-indigo-650 hover:bg-slate-50 border-transparent hover:border-slate-100'
+                                : 'text-slate-400 hover:text-cyber-cyan hover:bg-cyber-card/50 border-transparent hover:border-cyber-border/40'
+                          }`}
+                        >
+                          <div className={`p-1 rounded ${
+                            activeCustomPage === 'predictions'
+                              ? themeMode === 'light'
+                                ? 'text-indigo-600 bg-indigo-50'
+                                : 'text-cyber-cyan bg-cyber-bg' 
+                              : themeMode === 'light'
+                                ? 'text-slate-400 group-hover:text-indigo-650'
+                                : 'text-slate-500 group-hover:text-cyber-cyan'
+                          }`}>
+                            <Icons.Compass className="w-4 h-4" />
+                          </div>
+                          <span className="truncate flex-1">Predictions</span>
+                          {activeCustomPage === 'predictions' ? (
+                            <span className={`w-1.5 h-1.5 rounded-full ml-auto ${
+                              themeMode === 'light' ? 'bg-indigo-600' : 'bg-cyber-cyan shadow-[0_0_6px_rgba(0,229,255,1)]'
+                            }`}></span>
+                          ) : (
+                            <span className={`ml-auto text-[8px] px-1.5 py-0.5 border font-black rounded uppercase scale-90 ${
+                              themeMode === 'light'
+                                ? 'bg-indigo-50 border-indigo-250 text-indigo-700'
+                                : 'bg-[#0a1829] border-cyber-cyan/30 text-cyber-cyan'
+                            }`}>NEW</span>
+                          )}
+                        </button>
                       </>
                     );
                   })()}
@@ -6202,6 +6247,8 @@ export default function App() {
                     <StakingDashboard themeMode={themeMode} />
                   </div>
                 </div>
+              ) : activeCustomPage === 'predictions' ? (
+                <PredictionsDashboard onClose={() => setActiveCustomPage(null)} themeMode={themeMode} />
               ) : activeCustomPage ? (
                 <div className="space-y-8 animate-fade-in text-left">
                   {/* Custom Header Title Accent */}

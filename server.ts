@@ -422,7 +422,8 @@ const INITIAL_COINS_SERVER = [
   { id: 'stellar', name: 'Stellar', symbol: 'XLM', image: 'https://assets.coingecko.com/coins/images/100/large/stellar.png', current_price: 0.1085, price_change_percentage_24h: -0.22, address: '0x43c934a845205f0b514417d757d7235b8f53f1b9' },
   { id: 'internet-computer', name: 'ICP', symbol: 'ICP', image: 'https://assets.coingecko.com/coins/images/14495/large/Internet_Computer_logo.png', current_price: 11.20, price_change_percentage_24h: 4.10, address: '0x2bf7ab5db7edf685c29012f2c8a306fe963dcedf' },
   { id: 'filecoin', name: 'Filecoin', symbol: 'FIL', image: 'https://assets.coingecko.com/coins/images/12817/large/filecoin.png', current_price: 5.65, price_change_percentage_24h: -2.10, address: '0xfa8959d332616f7435fca3d68bcbb05b8214b7e1' },
-  { id: 'aptos', name: 'Aptos', symbol: 'APT', image: 'https://assets.coingecko.com/coins/images/26455/large/aptos_logo.png', current_price: 8.40, price_change_percentage_24h: 1.85, address: '0x1fa4ad03b22cf9a1ff0e1e9badb64c01f0b51478' }
+  { id: 'aptos', name: 'Aptos', symbol: 'APT', image: 'https://assets.coingecko.com/coins/images/26455/large/aptos_logo.png', current_price: 8.40, price_change_percentage_24h: 1.85, address: '0x1fa4ad03b22cf9a1ff0e1e9badb64c01f0b51478' },
+  { id: 'tether-gold', name: 'Tether Gold', symbol: 'XAUT', image: 'https://assets.coingecko.com/coins/images/10481/large/tether-gold.png', current_price: 2345.50, price_change_percentage_24h: 0.35, address: '0x687494c847a916122d793a1d35452b4e897902d5' }
 ];
 
 let globalTickerCoins = [...INITIAL_COINS_SERVER];
@@ -3192,6 +3193,578 @@ app.post("/api/apk/download-count", (req, res) => {
 app.get("/api/apk/analytics", (req, res) => {
   const data = readReleaseConfig();
   res.json({ success: true, analytics: data.analytics });
+});
+
+// ==========================================
+// PREDICTIONS & DISCUSSIONS LAYER FOR SIX COINS
+// ==========================================
+const PREDICTIONS_FILE = path.join(process.cwd(), "predictions-store.json");
+
+const DEFAULT_PREDICTIONS = {
+  surchi: {
+    bullish: 5312,
+    bearish: 4688,
+    comments: [
+      {
+        id: "c-s-1",
+        coinId: "surchi",
+        coin: "surchi",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Aiden",
+        username: "Web3Forensics",
+        text: "Holding SURCHI is an absolute no-brainer. Phase IV roadmap looks exceptionally solid.",
+        timestamp: new Date(Date.now() - 3600000).toISOString()
+      },
+      {
+        id: "c-s-2",
+        coinId: "surchi",
+        coin: "surchi",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Nora",
+        username: "BullishBob",
+        text: "The integration with Gemini on the backend gives us real-time smart radar. Extremely undervalued!",
+        timestamp: new Date(Date.now() - 7200000).toISOString()
+      },
+      {
+        id: "c-s-3",
+        coinId: "surchi",
+        coin: "surchi",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Leo",
+        username: "CryptoLuna",
+        text: "When Exchange Listing happens, this goes to $1 easily. Bullish all the way!",
+        timestamp: new Date(Date.now() - 14400000).toISOString()
+      }
+    ]
+  },
+  bitcoin: {
+    bullish: 12450,
+    bearish: 11020,
+    comments: [
+      {
+        id: "c-b-1",
+        coinId: "bitcoin",
+        coin: "bitcoin",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Felix",
+        username: "BTCSniper",
+        text: "Institutional inflows are increasing day by day. $80k is incoming soon.",
+        timestamp: new Date(Date.now() - 1800000).toISOString()
+      },
+      {
+        id: "c-b-2",
+        coinId: "bitcoin",
+        coin: "bitcoin",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Zoe",
+        username: "SatoshiStacker",
+        text: "A brief dip before the next leg up. Accumulating as much as possible here.",
+        timestamp: new Date(Date.now() - 5400000).toISOString()
+      }
+    ]
+  },
+  ethereum: {
+    bullish: 8940,
+    bearish: 7820,
+    comments: [
+      {
+        id: "c-e-1",
+        coinId: "ethereum",
+        coin: "ethereum",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Oliver",
+        username: "VitalikFan",
+        text: "Blob fees are dropping, transaction efficiency is reaching all time high. Long live ETH L2s!",
+        timestamp: new Date(Date.now() - 3000000).toISOString()
+      }
+    ]
+  },
+  binancecoin: {
+    bullish: 5120,
+    bearish: 4980,
+    comments: [
+      {
+        id: "c-bn-1",
+        coinId: "binancecoin",
+        coin: "binancecoin",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Mia",
+        username: "BNBWhale",
+        text: "BSC transaction volume is super active. BNB is highly stable compared to others.",
+        timestamp: new Date(Date.now() - 2200000).toISOString()
+      }
+    ]
+  },
+  solana: {
+    bullish: 15640,
+    bearish: 13850,
+    comments: [
+      {
+        id: "c-sl-1",
+        coinId: "solana",
+        coin: "solana",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Lucas",
+        username: "SolanaDev",
+        text: "Firedancer client benchmarks are insane. Solana is going to dominate the next cycle.",
+        timestamp: new Date(Date.now() - 900000).toISOString()
+      },
+      {
+        id: "c-sl-2",
+        coinId: "solana",
+        coin: "solana",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Luna",
+        username: "MemeDeity",
+        text: "All liquidity is on Raydium and Orca. SOL is the new retail gold mine.",
+        timestamp: new Date(Date.now() - 4100000).toISOString()
+      }
+    ]
+  },
+  xaut: {
+    bullish: 3100,
+    bearish: 2900,
+    comments: [
+      {
+        id: "c-x-1",
+        coinId: "xaut",
+        coin: "xaut",
+        avatar: "https://api.dicebear.com/7.x/pixel-art/svg?seed=Maya",
+        username: "GoldStandard",
+        text: "As inflation concerns grow, XAUT is the perfect onchain safe haven. Bullish hedge.",
+        timestamp: new Date(Date.now() - 1500000).toISOString()
+      }
+    ]
+  }
+};
+
+function readPredictionsStore() {
+  try {
+    if (fs.existsSync(PREDICTIONS_FILE)) {
+      const data = fs.readFileSync(PREDICTIONS_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("Failed to read predictions store:", err);
+  }
+  fs.writeFileSync(PREDICTIONS_FILE, JSON.stringify(DEFAULT_PREDICTIONS, null, 2), "utf-8");
+  return DEFAULT_PREDICTIONS;
+}
+
+function writePredictionsStore(data: any) {
+  try {
+    fs.writeFileSync(PREDICTIONS_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to write predictions store:", err);
+  }
+}
+
+// Ensure predictions storage is initialized
+readPredictionsStore();
+
+app.get("/api/predictions", (req, res) => {
+  const store = readPredictionsStore();
+  
+  // Define the six coins in this specific order
+  const coinsConfig = [
+    { id: 'surchi', symbol: 'SURCHIUSDT', name: 'SURCHI', logo: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg' },
+    { id: 'bitcoin', symbol: 'BTCUSDT', name: 'Bitcoin', logo: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
+    { id: 'ethereum', symbol: 'ETHUSDT', name: 'Ethereum', logo: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
+    { id: 'binancecoin', symbol: 'BNBUSDT', name: 'BNB', logo: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png' },
+    { id: 'solana', symbol: 'SOLUSDT', name: 'Solana', logo: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
+    { id: 'tether-gold', symbol: 'XAUTUSDT', name: 'XAUT', logo: 'https://assets.coingecko.com/coins/images/10481/large/tether-gold.png' }
+  ];
+
+  const result = coinsConfig.map(coin => {
+    // Look up the latest ticker price from the global ticker server-side model
+    const ticker = globalTickerCoins.find(c => c.id === coin.id);
+    const price = ticker ? ticker.current_price : (coin.id === 'tether-gold' ? 2345.50 : 1.0);
+    const change = ticker ? ticker.price_change_percentage_24h : 0.35;
+
+    // Retrieve stats from persistent storage
+    const storeKey = coin.id === 'tether-gold' ? 'xaut' : coin.id;
+    const stats = store[storeKey] || { bullish: 1000, bearish: 1000, comments: [] };
+
+    // Dynamic deterministic sparkline generator
+    const sparkline: any[] = [];
+    const pointsCount = 12;
+    let basePrice = price / (1 + (change / 100));
+    const priceDelta = price - basePrice;
+    
+    for (let i = 0; i < pointsCount; i++) {
+      const progress = i / (pointsCount - 1);
+      // Generate some realistic jagged wiggle
+      const wave = Math.sin(i * 1.8) * 0.4 + Math.cos(i * 1.1) * 0.2;
+      const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.1 * wave);
+      sparkline.push({
+        value: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
+      });
+    }
+
+    // Dynamic deterministic 24h custom details chart
+    const fullChart: any[] = [];
+    const chartPoints = 24;
+    for (let i = 0; i <= chartPoints; i++) {
+      const progress = i / chartPoints;
+      const wave = Math.sin(i * 1.5) * 0.5 + Math.cos(i * 0.8) * 0.25;
+      const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.15 * wave);
+      
+      // Generate a date-time label (e.g. "04:00 AM")
+      const d = new Date(Date.now() - (24 - i) * 3600000);
+      const label = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      fullChart.push({
+        time: label,
+        price: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
+      });
+    }
+
+    return {
+      id: coin.id,
+      symbol: coin.symbol,
+      name: coin.name,
+      logo: coin.logo,
+      price,
+      change,
+      bullishVotes: stats.bullish,
+      bearishVotes: stats.bearish,
+      comments: stats.comments || [],
+      sparkline,
+      chartData: fullChart
+    };
+  });
+
+  res.json({ success: true, predictions: result });
+});
+
+app.post("/api/predictions/vote", (req, res) => {
+  const { coinId, voteType } = req.body;
+  if (!coinId || !voteType || (voteType !== 'bullish' && voteType !== 'bearish')) {
+    return res.status(400).json({ success: false, error: "Invalid coin ID or vote type." });
+  }
+
+  const storeKey = coinId === 'tether-gold' ? 'xaut' : coinId;
+  const store = readPredictionsStore();
+  if (!store[storeKey]) {
+    store[storeKey] = { bullish: 1000, bearish: 1000, comments: [] };
+  }
+
+  if (voteType === 'bullish') {
+    store[storeKey].bullish += 1;
+  } else {
+    store[storeKey].bearish += 1;
+  }
+
+  writePredictionsStore(store);
+  res.json({
+    success: true,
+    bullishVotes: store[storeKey].bullish,
+    bearishVotes: store[storeKey].bearish
+  });
+});
+
+app.post("/api/predictions/comment", (req, res) => {
+  const { coinId, username, text, avatar } = req.body;
+  if (!coinId || !username || !text) {
+    return res.status(400).json({ success: false, error: "Missing required comment parameters." });
+  }
+
+  const storeKey = coinId === 'tether-gold' ? 'xaut' : coinId;
+  const store = readPredictionsStore();
+  if (!store[storeKey]) {
+    store[storeKey] = { bullish: 1000, bearish: 1000, comments: [] };
+  }
+
+  const newComment = {
+    id: `c-user-${Date.now()}`,
+    coinId,
+    coin: coinId,
+    avatar: avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`,
+    username,
+    text,
+    timestamp: new Date().toISOString()
+  };
+
+  if (!store[storeKey].comments) {
+    store[storeKey].comments = [];
+  }
+  store[storeKey].comments.unshift(newComment);
+  writePredictionsStore(store);
+
+  res.json({
+    success: true,
+    comments: store[storeKey].comments
+  });
+});
+
+// ==========================================
+// PERSISTENT USER PROFILES & STAKING DATABASE
+// ==========================================
+const USER_PROFILES_FILE = path.join(process.cwd(), "predictions-user-profiles.json");
+
+function readUserProfilesStore() {
+  try {
+    if (fs.existsSync(USER_PROFILES_FILE)) {
+      const data = fs.readFileSync(USER_PROFILES_FILE, "utf-8");
+      return JSON.parse(data);
+    }
+  } catch (err) {
+    console.error("Failed to read user profiles store:", err);
+  }
+  const initStore = {};
+  fs.writeFileSync(USER_PROFILES_FILE, JSON.stringify(initStore, null, 2), "utf-8");
+  return initStore;
+}
+
+function writeUserProfilesStore(data: any) {
+  try {
+    fs.writeFileSync(USER_PROFILES_FILE, JSON.stringify(data, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to write user profiles store:", err);
+  }
+}
+
+// User predictions profile endpoint (faucet included inside registration)
+app.get("/api/predictions/user", (req, res) => {
+  const { username } = req.query;
+  if (!username) {
+    return res.status(400).json({ success: false, error: "Username query parameter is required." });
+  }
+  const store = readUserProfilesStore();
+  const userKey = (username as string).trim().toLowerCase();
+  
+  if (!store[userKey]) {
+    store[userKey] = {
+      username: username,
+      balance: 100000.0, // starts with 100,000 $SURCHI
+      history: []
+    };
+    writeUserProfilesStore(store);
+  }
+  
+  res.json({ success: true, user: store[userKey] });
+});
+
+// Stake execution (real balance deduction)
+app.post("/api/predictions/stake", (req, res) => {
+  const { username, coinId, voteType, stakeAmount, entryPrice } = req.body;
+  if (!username || !coinId || !voteType || stakeAmount === undefined || entryPrice === undefined) {
+    return res.status(400).json({ success: false, error: "Missing required stake parameters." });
+  }
+
+  const parsedStake = parseFloat(stakeAmount);
+  if (isNaN(parsedStake) || parsedStake <= 0) {
+    return res.status(400).json({ success: false, error: "Invalid staking amount." });
+  }
+  if (parsedStake > 5000) {
+    return res.status(400).json({ success: false, error: "Maximum stake is 5,000 $SURCHI." });
+  }
+
+  const store = readUserProfilesStore();
+  const userKey = (username as string).trim().toLowerCase();
+  
+  if (!store[userKey]) {
+    store[userKey] = {
+      username: username,
+      balance: 100000.0,
+      history: []
+    };
+  }
+
+  if (store[userKey].balance < parsedStake) {
+    return res.status(400).json({ success: false, error: "Insufficient available $SURCHI balance." });
+  }
+
+  // Deduct balance securely
+  store[userKey].balance = parseFloat((store[userKey].balance - parsedStake).toFixed(4));
+
+  const newPrediction = {
+    id: `pred-${Date.now()}`,
+    coinId,
+    stakeAmount: parsedStake,
+    directionPredicted: voteType, // 'bullish' or 'bearish'
+    entryPrice: parseFloat(entryPrice),
+    timestamp: new Date().toISOString(),
+    status: "pending"
+  };
+
+  if (!store[userKey].history) {
+    store[userKey].history = [];
+  }
+  store[userKey].history.unshift(newPrediction);
+  writeUserProfilesStore(store);
+
+  // Increment coin votes in predictions-store.json for visual sync
+  const coinStoreKey = coinId === 'tether-gold' ? 'xaut' : coinId;
+  const predStore = readPredictionsStore();
+  if (!predStore[coinStoreKey]) {
+    predStore[coinStoreKey] = { bullish: 1000, bearish: 1000, comments: [] };
+  }
+
+  if (voteType === 'bullish') {
+    predStore[coinStoreKey].bullish += 1;
+  } else {
+    predStore[coinStoreKey].bearish += 1;
+  }
+  writePredictionsStore(predStore);
+
+  res.json({
+    success: true,
+    user: store[userKey],
+    prediction: newPrediction
+  });
+});
+
+// Settle Prediction (payout credit)
+app.post("/api/predictions/settle", (req, res) => {
+  const { username, predictionId, currentPrice } = req.body;
+  if (!username || !predictionId || currentPrice === undefined) {
+    return res.status(400).json({ success: false, error: "Missing required parameters for settling." });
+  }
+
+  const store = readUserProfilesStore();
+  const userKey = (username as string).trim().toLowerCase();
+
+  if (!store[userKey]) {
+    return res.status(404).json({ success: false, error: "User profile not found." });
+  }
+
+  const prediction = store[userKey].history.find((p: any) => p.id === predictionId);
+  if (!prediction) {
+    return res.status(404).json({ success: false, error: "Prediction record not found." });
+  }
+
+  if (prediction.status !== "pending") {
+    return res.status(400).json({ success: false, error: "Prediction is already resolved." });
+  }
+
+  const entry = parseFloat(prediction.entryPrice);
+  const current = parseFloat(currentPrice);
+  const direction = prediction.directionPredicted;
+  const stake = parseFloat(prediction.stakeAmount);
+
+  let isCorrect = false;
+  if (direction === 'bullish' && current > entry) {
+    isCorrect = true;
+  } else if (direction === 'bearish' && current < entry) {
+    isCorrect = true;
+  } else if (current === entry) {
+    isCorrect = true; // tie resolves as win for user satisfaction
+  }
+
+  let finalPayout = 0;
+  let multiplierApplied = 2;
+
+  if (isCorrect) {
+    finalPayout = stake * 2;
+    store[userKey].balance = parseFloat((store[userKey].balance + finalPayout).toFixed(4));
+  } else {
+    finalPayout = 0;
+    multiplierApplied = 0;
+  }
+
+  prediction.status = "resolved";
+  prediction.resolutionPrice = current;
+  prediction.multiplierApplied = parseFloat(multiplierApplied.toFixed(4));
+  prediction.finalPayout = parseFloat(finalPayout.toFixed(4));
+  prediction.outcome = isCorrect ? "win" : "loss";
+  prediction.resolvedAt = new Date().toISOString();
+
+  // Perfect 6-coin sweep logic
+  if (isCorrect) {
+    const requiredCoins = ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold'];
+    const currentPredTime = new Date(prediction.timestamp).getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Filter candidate predictions:
+    // 1. Current prediction or previously resolved winning predictions
+    // 2. Created within 24h of current prediction's timestamp
+    // 3. sweepBonusApplied has not already been used
+    const candidatePredictions = (store[userKey].history || []).filter((p: any) => {
+      if (p.id !== prediction.id) {
+        if (p.status !== "resolved") return false;
+        if (p.outcome !== "win") return false;
+      }
+      if (p.sweepBonusApplied) return false;
+      
+      const pTime = new Date(p.timestamp).getTime();
+      return Math.abs(currentPredTime - pTime) <= twentyFourHours;
+    });
+
+    const hasAll6 = requiredCoins.every(coinId => {
+      return candidatePredictions.some((p: any) => p.coinId === coinId);
+    });
+
+    if (hasAll6) {
+      const sweepSet: any[] = [];
+      requiredCoins.forEach(coinId => {
+        const found = candidatePredictions.find((p: any) => p.coinId === coinId);
+        if (found) {
+          sweepSet.push(found);
+        }
+      });
+
+      if (sweepSet.length === 6) {
+        const totalStaked = sweepSet.reduce((sum, p) => sum + parseFloat(p.stakeAmount), 0);
+        // Total payout should be 6x total staked.
+        // They already received 2x for each of the 6 wins (which equals 2 * totalStaked).
+        // The additional perfect sweep bonus payout is therefore 4x the total staked amount.
+        const sweepBonusPayout = parseFloat((totalStaked * 4).toFixed(4));
+
+        sweepSet.forEach(p => {
+          const histItem = store[userKey].history.find((h: any) => h.id === p.id);
+          if (histItem) {
+            histItem.sweepBonusApplied = true;
+          }
+        });
+
+        store[userKey].balance = parseFloat((store[userKey].balance + sweepBonusPayout).toFixed(4));
+
+        const sweepHistoryItem = {
+          id: `sweep-${Date.now()}`,
+          coinId: "sweep",
+          stakeAmount: totalStaked,
+          directionPredicted: "bullish",
+          entryPrice: 0,
+          resolutionPrice: 0,
+          timestamp: new Date().toISOString(),
+          status: "resolved",
+          resolvedAt: new Date().toISOString(),
+          multiplierApplied: 6,
+          finalPayout: sweepBonusPayout,
+          outcome: "win",
+          isSweepBonus: true
+        };
+        store[userKey].history.unshift(sweepHistoryItem);
+      }
+    }
+  }
+
+  writeUserProfilesStore(store);
+
+  res.json({
+    success: true,
+    user: store[userKey],
+    prediction
+  });
+});
+
+// Faucet top-up endpoint
+app.post("/api/predictions/faucet", (req, res) => {
+  const { username } = req.body;
+  if (!username) {
+    return res.status(400).json({ success: false, error: "Username is required." });
+  }
+
+  const store = readUserProfilesStore();
+  const userKey = (username as string).trim().toLowerCase();
+
+  if (!store[userKey]) {
+    store[userKey] = {
+      username: username,
+      balance: 100000.0,
+      history: []
+    };
+  }
+
+  store[userKey].balance = parseFloat((store[userKey].balance + 50000.0).toFixed(4));
+  writeUserProfilesStore(store);
+
+  res.json({
+    success: true,
+    user: store[userKey]
+  });
 });
 
 // Start Server Core
