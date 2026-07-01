@@ -3448,114 +3448,123 @@ function writePredictionsStore(data: any) {
 readPredictionsStore();
 
 app.get("/api/predictions", async (req, res) => {
-  // If some prices are not loaded yet or are stale, fetch them live!
-  const now = Date.now();
-  const needsFetch = Object.values(lastLivePrices).some(lp => lp.price === null || now - lp.timestamp > 30000);
-  
-  if (needsFetch) {
-    try {
-      const fetched = await fetchRealPricesDirectly();
-      for (const key of ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold']) {
-        if (fetched[key]) {
-          lastLivePrices[key] = {
-            price: fetched[key].price,
-            change: fetched[key].change,
-            timestamp: now,
-            success: true
-          };
-          const idx = globalTickerCoins.findIndex(c => c.id === key);
-          if (idx !== -1) {
-            globalTickerCoins[idx].current_price = fetched[key].price;
-            globalTickerCoins[idx].price_change_percentage_24h = fetched[key].change;
-          }
-        } else {
-          const existing = lastLivePrices[key];
-          if (now - existing.timestamp > 90000) {
-            lastLivePrices[key].success = false;
-            lastLivePrices[key].price = null;
-            lastLivePrices[key].change = null;
+  try {
+    // If some prices are not loaded yet or are stale, fetch them live!
+    const now = Date.now();
+    const needsFetch = Object.values(lastLivePrices).some(lp => lp.price === null || now - lp.timestamp > 30000);
+    
+    if (needsFetch) {
+      try {
+        const fetched = await fetchRealPricesDirectly();
+        for (const key of ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold']) {
+          if (fetched[key]) {
+            lastLivePrices[key] = {
+              price: fetched[key].price,
+              change: fetched[key].change,
+              timestamp: now,
+              success: true
+            };
+            const idx = globalTickerCoins.findIndex(c => c.id === key);
+            if (idx !== -1) {
+              globalTickerCoins[idx].current_price = fetched[key].price;
+              globalTickerCoins[idx].price_change_percentage_24h = fetched[key].change;
+            }
+          } else {
+            const existing = lastLivePrices[key];
+            if (now - existing.timestamp > 90000) {
+              lastLivePrices[key].success = false;
+              lastLivePrices[key].price = null;
+              lastLivePrices[key].change = null;
+            }
           }
         }
+      } catch (err) {
+        console.error("Direct live price fetch error during request:", err);
       }
-    } catch (err) {
-      console.error("Direct live price fetch error during request:", err);
     }
-  }
 
-  const store = readPredictionsStore();
-  
-  // Define the six coins in this specific order
-  const coinsConfig = [
-    { id: 'surchi', symbol: 'SURCHIUSDT', name: 'SURCHI', logo: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg' },
-    { id: 'bitcoin', symbol: 'BTCUSDT', name: 'Bitcoin', logo: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
-    { id: 'ethereum', symbol: 'ETHUSDT', name: 'Ethereum', logo: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
-    { id: 'binancecoin', symbol: 'BNBUSDT', name: 'BNB', logo: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png' },
-    { id: 'solana', symbol: 'SOLUSDT', name: 'Solana', logo: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
-    { id: 'tether-gold', symbol: 'XAUTUSDT', name: 'XAUT', logo: 'https://assets.coingecko.com/coins/images/10481/large/tether-gold.png' }
-  ];
+    const store = readPredictionsStore();
+    
+    // Define the six coins in this specific order
+    const coinsConfig = [
+      { id: 'surchi', symbol: 'SURCHIUSDT', name: 'SURCHI', logo: 'https://raw.githubusercontent.com/surchiai/surchiai.github.io/refs/heads/main/SURCHI%20logo.jpg' },
+      { id: 'bitcoin', symbol: 'BTCUSDT', name: 'Bitcoin', logo: 'https://assets.coingecko.com/coins/images/1/large/bitcoin.png' },
+      { id: 'ethereum', symbol: 'ETHUSDT', name: 'Ethereum', logo: 'https://assets.coingecko.com/coins/images/279/large/ethereum.png' },
+      { id: 'binancecoin', symbol: 'BNBUSDT', name: 'BNB', logo: 'https://assets.coingecko.com/coins/images/825/large/binance-coin-logo.png' },
+      { id: 'solana', symbol: 'SOLUSDT', name: 'Solana', logo: 'https://assets.coingecko.com/coins/images/4128/large/solana.png' },
+      { id: 'tether-gold', symbol: 'XAUTUSDT', name: 'XAUT', logo: 'https://assets.coingecko.com/coins/images/10481/large/tether-gold.png' }
+    ];
 
-  const result = coinsConfig.map(coin => {
-    const live = lastLivePrices[coin.id];
-    const price = (live && live.success) ? live.price : null;
-    const change = (live && live.success) ? live.change : null;
+    const result = coinsConfig.map(coin => {
+      const live = lastLivePrices[coin.id];
+      const price = (live && live.success) ? live.price : null;
+      const change = (live && live.success) ? live.change : null;
 
-    // Retrieve stats from persistent storage
-    const storeKey = coin.id === 'tether-gold' ? 'xaut' : coin.id;
-    const stats = store[storeKey] || { bullish: 1000, bearish: 1000, comments: [] };
+      // Retrieve stats from persistent storage
+      const storeKey = coin.id === 'tether-gold' ? 'xaut' : coin.id;
+      const stats = store[storeKey] || { bullish: 1000, bearish: 1000, comments: [] };
 
-    // Sparkline and chartData
-    const sparkline: any[] = [];
-    const fullChart: any[] = [];
+      // Sparkline and chartData
+      const sparkline: any[] = [];
+      const fullChart: any[] = [];
 
-    if (price !== null && change !== null) {
-      // Dynamic deterministic sparkline generator
-      const pointsCount = 12;
-      let basePrice = price / (1 + (change / 100));
-      const priceDelta = price - basePrice;
-      
-      for (let i = 0; i < pointsCount; i++) {
-        const progress = i / (pointsCount - 1);
-        const wave = Math.sin(i * 1.8) * 0.4 + Math.cos(i * 1.1) * 0.2;
-        const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.1 * wave);
-        sparkline.push({
-          value: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
-        });
-      }
-
-      // Dynamic deterministic 24h custom details chart
-      const chartPoints = 24;
-      for (let i = 0; i <= chartPoints; i++) {
-        const progress = i / chartPoints;
-        const wave = Math.sin(i * 1.5) * 0.5 + Math.cos(i * 0.8) * 0.25;
-        const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.15 * wave);
+      if (price !== null && change !== null) {
+        // Dynamic deterministic sparkline generator
+        const pointsCount = 12;
+        let basePrice = price / (1 + (change / 100));
+        const priceDelta = price - basePrice;
         
-        const d = new Date(Date.now() - (24 - i) * 3600000);
-        const label = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        for (let i = 0; i < pointsCount; i++) {
+          const progress = i / (pointsCount - 1);
+          const wave = Math.sin(i * 1.8) * 0.4 + Math.cos(i * 1.1) * 0.2;
+          const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.1 * wave);
+          sparkline.push({
+            value: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
+          });
+        }
 
-        fullChart.push({
-          time: label,
-          price: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
-        });
+        // Dynamic deterministic 24h custom details chart
+        const chartPoints = 24;
+        for (let i = 0; i <= chartPoints; i++) {
+          const progress = i / chartPoints;
+          const wave = Math.sin(i * 1.5) * 0.5 + Math.cos(i * 0.8) * 0.25;
+          const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.15 * wave);
+          
+          const d = new Date(Date.now() - (24 - i) * 3600000);
+          const label = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+          fullChart.push({
+            time: label,
+            price: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
+          });
+        }
       }
-    }
 
-    return {
-      id: coin.id,
-      symbol: coin.symbol,
-      name: coin.name,
-      logo: coin.logo,
-      price,
-      change,
-      bullishVotes: stats.bullish,
-      bearishVotes: stats.bearish,
-      comments: stats.comments || [],
-      sparkline,
-      chartData: fullChart,
-      priceError: price === null
-    };
-  });
+      return {
+        id: coin.id,
+        symbol: coin.symbol,
+        name: coin.name,
+        logo: coin.logo,
+        price,
+        change,
+        bullishVotes: stats.bullish,
+        bearishVotes: stats.bearish,
+        comments: stats.comments || [],
+        sparkline,
+        chartData: fullChart,
+        priceError: price === null
+      };
+    });
 
-  res.json({ success: true, predictions: result });
+    res.json({ success: true, predictions: result });
+  } catch (error: any) {
+    console.error("CRITICAL ERROR IN /api/predictions HANDLER:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message || String(error),
+      stack: error.stack || ""
+    });
+  }
 });
 
 app.post("/api/predictions/vote", (req, res) => {
