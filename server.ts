@@ -3570,63 +3570,82 @@ app.get("/api/predictions", async (req, res) => {
 });
 
 app.post("/api/predictions/vote", (req, res) => {
-  const { coinId, voteType } = req.body;
-  if (!coinId || !voteType || (voteType !== 'bullish' && voteType !== 'bearish')) {
-    return res.status(400).json({ success: false, error: "Invalid coin ID or vote type." });
-  }
+  try {
+    const { coinId, voteType } = req.body;
+    if (!coinId || !voteType || (voteType !== 'bullish' && voteType !== 'bearish')) {
+      return res.status(400).json({ success: false, error: "Invalid coin ID or vote type." });
+    }
 
-  const storeKey = coinId === 'tether-gold' ? 'xaut' : coinId;
-  const store = readPredictionsStore();
-  if (!store[storeKey]) {
-    store[storeKey] = { bullish: 1000, bearish: 1000, comments: [] };
-  }
+    const storeKey = coinId === 'tether-gold' ? 'xaut' : coinId;
+    const store = readPredictionsStore();
+    if (!store[storeKey]) {
+      store[storeKey] = { bullish: 1000, bearish: 1000, comments: [] };
+    }
 
-  if (voteType === 'bullish') {
-    store[storeKey].bullish += 1;
-  } else {
-    store[storeKey].bearish += 1;
-  }
+    if (voteType === 'bullish') {
+      store[storeKey].bullish += 1;
+    } else {
+      store[storeKey].bearish += 1;
+    }
 
-  writePredictionsStore(store);
-  res.json({
-    success: true,
-    bullishVotes: store[storeKey].bullish,
-    bearishVotes: store[storeKey].bearish
-  });
+    writePredictionsStore(store);
+    res.json({
+      success: true,
+      bullishVotes: store[storeKey].bullish,
+      bearishVotes: store[storeKey].bearish
+    });
+  } catch (err: any) {
+    console.error("ERROR IN /api/predictions/vote HANDLER:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to process vote: " + (err.message || String(err)),
+      stack: err.stack || ""
+    });
+  }
 });
 
 app.post("/api/predictions/comment", (req, res) => {
-  const { coinId, username, text, avatar } = req.body;
-  if (!coinId || !username || !text) {
-    return res.status(400).json({ success: false, error: "Missing required comment parameters." });
+  try {
+    const { coinId, username, text, avatar } = req.body;
+    if (!coinId || !username || !text) {
+      return res.status(400).json({ success: false, error: "Missing required comment parameters." });
+    }
+
+    const storeKey = coinId === 'tether-gold' ? 'xaut' : coinId;
+    const store = readPredictionsStore();
+    if (!store[storeKey]) {
+      store[storeKey] = { bullish: 1000, bearish: 1000, comments: [] };
+    }
+
+    const cleanUsername = String(username).trim();
+    const newComment = {
+      id: `c-user-${Date.now()}`,
+      coinId,
+      coin: coinId,
+      avatar: avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${cleanUsername}`,
+      username: cleanUsername,
+      text: String(text).trim(),
+      timestamp: new Date().toISOString()
+    };
+
+    if (!store[storeKey].comments) {
+      store[storeKey].comments = [];
+    }
+    store[storeKey].comments.unshift(newComment);
+    writePredictionsStore(store);
+
+    res.json({
+      success: true,
+      comments: store[storeKey].comments
+    });
+  } catch (err: any) {
+    console.error("ERROR IN /api/predictions/comment HANDLER:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to submit comment: " + (err.message || String(err)),
+      stack: err.stack || ""
+    });
   }
-
-  const storeKey = coinId === 'tether-gold' ? 'xaut' : coinId;
-  const store = readPredictionsStore();
-  if (!store[storeKey]) {
-    store[storeKey] = { bullish: 1000, bearish: 1000, comments: [] };
-  }
-
-  const newComment = {
-    id: `c-user-${Date.now()}`,
-    coinId,
-    coin: coinId,
-    avatar: avatar || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`,
-    username,
-    text,
-    timestamp: new Date().toISOString()
-  };
-
-  if (!store[storeKey].comments) {
-    store[storeKey].comments = [];
-  }
-  store[storeKey].comments.unshift(newComment);
-  writePredictionsStore(store);
-
-  res.json({
-    success: true,
-    comments: store[storeKey].comments
-  });
 });
 
 // ==========================================
@@ -3806,166 +3825,220 @@ function autoSettleUserPredictions(store: any, userKey: string) {
 
 // User predictions profile endpoint (faucet included inside registration)
 app.get("/api/predictions/user", (req, res) => {
-  const { username } = req.query;
-  if (!username) {
-    return res.status(400).json({ success: false, error: "Username query parameter is required." });
-  }
-  const store = readUserProfilesStore();
-  const userKey = (username as string).trim().toLowerCase();
-  
-  if (!store[userKey]) {
-    store[userKey] = {
-      username: username,
-      balance: 100000.0, // starts with 100,000 $SURCHI
-      history: []
-    };
-    writeUserProfilesStore(store);
-  } else {
-    const changed = autoSettleUserPredictions(store, userKey);
-    if (changed) {
-      writeUserProfilesStore(store);
+  try {
+    const { username } = req.query;
+    if (!username) {
+      return res.status(400).json({ success: false, error: "Username query parameter is required." });
     }
+    const cleanUsername = String(username).trim();
+    if (!cleanUsername) {
+      return res.status(400).json({ success: false, error: "Username cannot be empty." });
+    }
+    const store = readUserProfilesStore();
+    const userKey = cleanUsername.toLowerCase();
+    
+    if (!store[userKey]) {
+      store[userKey] = {
+        username: cleanUsername,
+        balance: 100000.0, // starts with 100,000 $SURCHI
+        history: []
+      };
+      writeUserProfilesStore(store);
+    } else {
+      const changed = autoSettleUserPredictions(store, userKey);
+      if (changed) {
+        writeUserProfilesStore(store);
+      }
+    }
+    
+    res.json({ success: true, user: store[userKey] });
+  } catch (err: any) {
+    console.error("ERROR IN /api/predictions/user HANDLER:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to retrieve user profile: " + (err.message || String(err)),
+      stack: err.stack || ""
+    });
   }
-  
-  res.json({ success: true, user: store[userKey] });
 });
 
 // Stake execution (real balance deduction)
 app.post("/api/predictions/stake", (req, res) => {
-  const { username, coinId, voteType, stakeAmount, entryPrice } = req.body;
-  if (!username || !coinId || !voteType || stakeAmount === undefined || entryPrice === undefined) {
-    return res.status(400).json({ success: false, error: "Missing required stake parameters." });
-  }
+  try {
+    const { username, coinId, voteType, stakeAmount, entryPrice } = req.body;
+    if (!username || !coinId || !voteType || stakeAmount === undefined || entryPrice === undefined) {
+      return res.status(400).json({ success: false, error: "Missing required stake parameters." });
+    }
 
-  const parsedStake = parseFloat(stakeAmount);
-  if (isNaN(parsedStake) || parsedStake <= 0) {
-    return res.status(400).json({ success: false, error: "Invalid staking amount." });
-  }
-  if (parsedStake > 5000) {
-    return res.status(400).json({ success: false, error: "Maximum stake is 5,000 $SURCHI." });
-  }
+    const cleanUsername = String(username).trim();
+    const cleanCoinId = String(coinId).trim();
+    const cleanVoteType = String(voteType).trim();
+    if (!cleanUsername || !cleanCoinId || (cleanVoteType !== 'bullish' && cleanVoteType !== 'bearish')) {
+      return res.status(400).json({ success: false, error: "Invalid stake parameters provided." });
+    }
 
-  const store = readUserProfilesStore();
-  const userKey = (username as string).trim().toLowerCase();
-  
-  if (!store[userKey]) {
-    store[userKey] = {
-      username: username,
-      balance: 100000.0,
-      history: []
+    const parsedStake = parseFloat(stakeAmount);
+    if (isNaN(parsedStake) || parsedStake <= 0) {
+      return res.status(400).json({ success: false, error: "Invalid staking amount." });
+    }
+    if (parsedStake > 5000) {
+      return res.status(400).json({ success: false, error: "Maximum stake is 5,000 $SURCHI." });
+    }
+
+    const store = readUserProfilesStore();
+    const userKey = cleanUsername.toLowerCase();
+    
+    if (!store[userKey]) {
+      store[userKey] = {
+        username: cleanUsername,
+        balance: 100000.0,
+        history: []
+      };
+    }
+
+    if (store[userKey].balance < parsedStake) {
+      return res.status(400).json({ success: false, error: "Insufficient available $SURCHI balance." });
+    }
+
+    // Deduct balance securely
+    store[userKey].balance = parseFloat((store[userKey].balance - parsedStake).toFixed(4));
+
+    const newPrediction = {
+      id: `pred-${Date.now()}`,
+      coinId: cleanCoinId,
+      stakeAmount: parsedStake,
+      directionPredicted: cleanVoteType, // 'bullish' or 'bearish'
+      entryPrice: parseFloat(entryPrice),
+      timestamp: new Date().toISOString(),
+      status: "pending"
     };
+
+    if (!store[userKey].history) {
+      store[userKey].history = [];
+    }
+    store[userKey].history.unshift(newPrediction);
+    writeUserProfilesStore(store);
+
+    // Increment coin votes in predictions-store.json for visual sync
+    const coinStoreKey = cleanCoinId === 'tether-gold' ? 'xaut' : cleanCoinId;
+    const predStore = readPredictionsStore();
+    if (!predStore[coinStoreKey]) {
+      predStore[coinStoreKey] = { bullish: 1000, bearish: 1000, comments: [] };
+    }
+
+    if (cleanVoteType === 'bullish') {
+      predStore[coinStoreKey].bullish += 1;
+    } else {
+      predStore[coinStoreKey].bearish += 1;
+    }
+    writePredictionsStore(predStore);
+
+    res.json({
+      success: true,
+      user: store[userKey],
+      prediction: newPrediction
+    });
+  } catch (err: any) {
+    console.error("ERROR IN /api/predictions/stake HANDLER:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to place stake: " + (err.message || String(err)),
+      stack: err.stack || ""
+    });
   }
-
-  if (store[userKey].balance < parsedStake) {
-    return res.status(400).json({ success: false, error: "Insufficient available $SURCHI balance." });
-  }
-
-  // Deduct balance securely
-  store[userKey].balance = parseFloat((store[userKey].balance - parsedStake).toFixed(4));
-
-  const newPrediction = {
-    id: `pred-${Date.now()}`,
-    coinId,
-    stakeAmount: parsedStake,
-    directionPredicted: voteType, // 'bullish' or 'bearish'
-    entryPrice: parseFloat(entryPrice),
-    timestamp: new Date().toISOString(),
-    status: "pending"
-  };
-
-  if (!store[userKey].history) {
-    store[userKey].history = [];
-  }
-  store[userKey].history.unshift(newPrediction);
-  writeUserProfilesStore(store);
-
-  // Increment coin votes in predictions-store.json for visual sync
-  const coinStoreKey = coinId === 'tether-gold' ? 'xaut' : coinId;
-  const predStore = readPredictionsStore();
-  if (!predStore[coinStoreKey]) {
-    predStore[coinStoreKey] = { bullish: 1000, bearish: 1000, comments: [] };
-  }
-
-  if (voteType === 'bullish') {
-    predStore[coinStoreKey].bullish += 1;
-  } else {
-    predStore[coinStoreKey].bearish += 1;
-  }
-  writePredictionsStore(predStore);
-
-  res.json({
-    success: true,
-    user: store[userKey],
-    prediction: newPrediction
-  });
 });
 
 // Settle Prediction (payout credit)
 app.post("/api/predictions/settle", (req, res) => {
-  const { username, predictionId, currentPrice } = req.body;
-  if (!username || !predictionId || currentPrice === undefined) {
-    return res.status(400).json({ success: false, error: "Missing required parameters for settling." });
+  try {
+    const { username, predictionId, currentPrice } = req.body;
+    if (!username || !predictionId || currentPrice === undefined) {
+      return res.status(400).json({ success: false, error: "Missing required parameters for settling." });
+    }
+
+    const cleanUsername = String(username).trim();
+    const cleanPredictionId = String(predictionId).trim();
+    const store = readUserProfilesStore();
+    const userKey = cleanUsername.toLowerCase();
+
+    if (!store[userKey]) {
+      return res.status(404).json({ success: false, error: "User profile not found." });
+    }
+
+    if (!store[userKey].history) {
+      store[userKey].history = [];
+    }
+
+    const prediction = store[userKey].history.find((p: any) => p.id === cleanPredictionId);
+    if (!prediction) {
+      return res.status(404).json({ success: false, error: "Prediction record not found." });
+    }
+
+    if (prediction.status !== "pending") {
+      return res.status(400).json({ success: false, error: "Prediction is already resolved." });
+    }
+
+    // Enforce 24-hour delay before manual resolution
+    const timeElapsed = Date.now() - new Date(prediction.timestamp).getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+    if (timeElapsed < twentyFourHours) {
+      return res.status(400).json({ success: false, error: "Predictions can only be settled after the full 24-hour window has completed." });
+    }
+
+    const finalPrice = parseFloat(currentPrice);
+    settlePredictionInternal(store, userKey, prediction, finalPrice);
+    writeUserProfilesStore(store);
+
+    res.json({
+      success: true,
+      user: store[userKey],
+      prediction
+    });
+  } catch (err: any) {
+    console.error("ERROR IN /api/predictions/settle HANDLER:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to settle prediction: " + (err.message || String(err)),
+      stack: err.stack || ""
+    });
   }
-
-  const store = readUserProfilesStore();
-  const userKey = (username as string).trim().toLowerCase();
-
-  if (!store[userKey]) {
-    return res.status(404).json({ success: false, error: "User profile not found." });
-  }
-
-  const prediction = store[userKey].history.find((p: any) => p.id === predictionId);
-  if (!prediction) {
-    return res.status(404).json({ success: false, error: "Prediction record not found." });
-  }
-
-  if (prediction.status !== "pending") {
-    return res.status(400).json({ success: false, error: "Prediction is already resolved." });
-  }
-
-  // Enforce 24-hour delay before manual resolution
-  const timeElapsed = Date.now() - new Date(prediction.timestamp).getTime();
-  const twentyFourHours = 24 * 60 * 60 * 1000;
-  if (timeElapsed < twentyFourHours) {
-    return res.status(400).json({ success: false, error: "Predictions can only be settled after the full 24-hour window has completed." });
-  }
-
-  const finalPrice = parseFloat(currentPrice);
-  settlePredictionInternal(store, userKey, prediction, finalPrice);
-  writeUserProfilesStore(store);
-
-  res.json({
-    success: true,
-    user: store[userKey],
-    prediction
-  });
 });
 
 // Faucet top-up endpoint
 app.post("/api/predictions/faucet", (req, res) => {
-  const { username } = req.body;
-  if (!username) {
-    return res.status(400).json({ success: false, error: "Username is required." });
+  try {
+    const { username } = req.body;
+    if (!username) {
+      return res.status(400).json({ success: false, error: "Username is required." });
+    }
+
+    const cleanUsername = String(username).trim();
+    const store = readUserProfilesStore();
+    const userKey = cleanUsername.toLowerCase();
+
+    if (!store[userKey]) {
+      store[userKey] = {
+        username: cleanUsername,
+        balance: 100000.0,
+        history: []
+      };
+    }
+
+    store[userKey].balance = parseFloat((store[userKey].balance + 50000.0).toFixed(4));
+    writeUserProfilesStore(store);
+
+    res.json({
+      success: true,
+      user: store[userKey]
+    });
+  } catch (err: any) {
+    console.error("ERROR IN /api/predictions/faucet HANDLER:", err);
+    res.status(500).json({
+      success: false,
+      error: "Failed to complete faucet request: " + (err.message || String(err)),
+      stack: err.stack || ""
+    });
   }
-
-  const store = readUserProfilesStore();
-  const userKey = (username as string).trim().toLowerCase();
-
-  if (!store[userKey]) {
-    store[userKey] = {
-      username: username,
-      balance: 100000.0,
-      history: []
-    };
-  }
-
-  store[userKey].balance = parseFloat((store[userKey].balance + 50000.0).toFixed(4));
-  writeUserProfilesStore(store);
-
-  res.json({
-    success: true,
-    user: store[userKey]
-  });
 });
 
 // Start Server Core
