@@ -2,7 +2,6 @@ import express from "express";
 import path from "path";
 import fs from "fs";
 import dotenv from "dotenv";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
@@ -26,6 +25,24 @@ function getTimeoutSignal(ms: number): AbortSignal | undefined {
     return controller.signal;
   } catch {
     return undefined;
+  }
+}
+
+function getSafeFilePath(defaultPath: string): string {
+  try {
+    const dir = path.dirname(defaultPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const testFile = path.join(dir, `.test_write_${Date.now()}`);
+    fs.writeFileSync(testFile, "test", "utf-8");
+    fs.unlinkSync(testFile);
+    return defaultPath;
+  } catch (err) {
+    const filename = path.basename(defaultPath);
+    const tmpPath = path.join("/tmp", filename);
+    console.warn(`[Storage] Path ${defaultPath} is not writable, using /tmp fallback: ${tmpPath}`);
+    return tmpPath;
   }
 }
 
@@ -2957,7 +2974,8 @@ app.post("/api/token/holders", async (req, res) => {
 // --- APK DOWNLOAD & INSTALLATION SYSTEM BACKEND ---
 const UPLOADS_DIR = path.join(process.cwd(), "uploads");
 const APK_DIR = path.join(UPLOADS_DIR, "apk");
-const CONFIG_FILE = path.join(process.cwd(), "apk-releases.json");
+const CONFIG_FILE_DEFAULT = path.join(process.cwd(), "apk-releases.json");
+const CONFIG_FILE = getSafeFilePath(CONFIG_FILE_DEFAULT);
 
 // Ensure upload directories exist
 try {
@@ -3260,24 +3278,6 @@ app.get("/api/apk/analytics", (req, res) => {
 // ==========================================
 // PREDICTIONS & DISCUSSIONS LAYER FOR SIX COINS
 // ==========================================
-function getSafeFilePath(defaultPath: string): string {
-  try {
-    const dir = path.dirname(defaultPath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    const testFile = path.join(dir, `.test_write_${Date.now()}`);
-    fs.writeFileSync(testFile, "test", "utf-8");
-    fs.unlinkSync(testFile);
-    return defaultPath;
-  } catch (err) {
-    const filename = path.basename(defaultPath);
-    const tmpPath = path.join("/tmp", filename);
-    console.warn(`[Storage] Path ${defaultPath} is not writable, using /tmp fallback: ${tmpPath}`);
-    return tmpPath;
-  }
-}
-
 const PREDICTIONS_FILE_DEFAULT = path.join(process.cwd(), "predictions-store.json");
 const PREDICTIONS_FILE = getSafeFilePath(PREDICTIONS_FILE_DEFAULT);
 
@@ -3960,6 +3960,7 @@ app.post("/api/predictions/faucet", (req, res) => {
 // Start Server Core
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
     const vite = await createViteServer({
       server: { middlewareMode: true },
       appType: "spa",
@@ -3980,4 +3981,8 @@ async function startServer() {
   });
 }
 
-startServer();
+if (!process.env.VERCEL) {
+  startServer();
+}
+
+export default app;
