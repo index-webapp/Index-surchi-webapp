@@ -34,9 +34,18 @@ interface PredictionsDashboardProps {
 
 export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: PredictionsDashboardProps) {
   const [coins, setCoins] = useState<PredictionCoin[]>([]);
+  const [candleCache, setCandleCache] = useState<Record<string, any[]>>({});
+  const [secondsTicker, setSecondsTicker] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedCoinId, setSelectedCoinId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setSecondsTicker(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(t);
+  }, []);
 
   // Comment input states
   const [newCommentText, setNewCommentText] = useState('');
@@ -68,15 +77,65 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
   const fetchPredictions = async () => {
     try {
       const res = await fetch('/api/predictions');
+      if (!res.ok) {
+        let bodyText = '';
+        try {
+          bodyText = await res.text();
+        } catch (_) {}
+        const truncatedBody = bodyText ? bodyText.slice(0, 200) : 'No body';
+        throw new Error(`Server returned status ${res.status} (${res.statusText}): ${truncatedBody}`);
+      }
       const data = await res.json();
       if (data.success) {
         setCoins(data.predictions);
+
+        // Update candleCache state
+        setCandleCache(prev => {
+          const next = { ...prev };
+          data.predictions.forEach((coin: any) => {
+            const coinId = coin.id;
+            const existingCandles = next[coinId];
+            if (!existingCandles || existingCandles.length === 0) {
+              // Generate initial candles
+              next[coinId] = generateCandlesForCoin(coin.price, coin.change, coin.id);
+            } else if (coin.price !== null && coin.change !== null) {
+              // Update the very last candle in-place
+              const updatedCandles = [...existingCandles];
+              const lastIndex = updatedCandles.length - 1;
+              if (lastIndex >= 0) {
+                const lastCandle = { ...updatedCandles[lastIndex] };
+                const prevCandle = lastIndex > 0 ? updatedCandles[lastIndex - 1] : null;
+                
+                const openVal = prevCandle ? prevCandle.close : lastCandle.open;
+                const closeVal = coin.price;
+                
+                let highVal = Math.max(lastCandle.high, openVal, closeVal);
+                let lowVal = Math.min(lastCandle.low, openVal, closeVal);
+                if (lowVal <= 0) lowVal = Math.min(openVal, closeVal) * 0.99;
+
+                lastCandle.open = openVal;
+                lastCandle.close = closeVal;
+                lastCandle.price = closeVal;
+                lastCandle.high = highVal;
+                lastCandle.low = lowVal;
+                lastCandle.body = [Math.min(openVal, closeVal), Math.max(openVal, closeVal)];
+                lastCandle.wick = [lowVal, highVal];
+                
+                updatedCandles[lastIndex] = lastCandle;
+              }
+              next[coinId] = updatedCandles;
+            }
+          });
+          return next;
+        });
+
       } else {
         setError('Failed to load predictions config');
       }
-    } catch (err) {
-      console.error(err);
-      setError('Network connection failed');
+    } catch (err: any) {
+      console.error("[PredictionsDashboard] fetchPredictions exception thrown:", err);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      setError(`Network connection failed: ${errMsg}`);
     } finally {
       setLoading(false);
     }
@@ -99,13 +158,13 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
 
   useEffect(() => {
     fetchPredictions();
-    // Poll every 3 seconds to keep live price indices and comments up-to-date in near real-time
-    const interval = setInterval(fetchPredictions, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
     fetchUserProfile();
+    // Poll every 3 seconds to keep live price indices, comments, and profile synchronized
+    const interval = setInterval(() => {
+      fetchPredictions();
+      fetchUserProfile();
+    }, 3000);
+    return () => clearInterval(interval);
   }, [username]);
 
   // Save votes to localStorage
@@ -401,6 +460,71 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                   const votedFor = hasVoted[coin.id];
                   const userAvatarUrls = getParticipantAvatars(coin.id);
 
+                  const isPriceOffline = coin.price === null || coin.priceError;
+
+                  if (isPriceOffline) {
+                    return (
+                      <div
+                        key={coin.id}
+                        id={`coin-card-${coin.id}`}
+                        className="group bg-[#0A0A0C] border border-zinc-850 rounded-[22px] p-5 flex flex-col justify-between transition-all duration-300 shadow-[0_4px_24px_rgba(0,0,0,0.4)] min-h-[300px]"
+                      >
+                        <div className="flex justify-between items-start gap-4 mb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-850 flex items-center justify-center shrink-0 animate-pulse">
+                              <Icons.Loader2 className="w-4 h-4 text-zinc-650 animate-spin" />
+                            </div>
+                            <div className="text-left space-y-1.5">
+                              <div className="w-16 h-3 bg-zinc-900 rounded animate-pulse"></div>
+                              <div className="w-10 h-2 bg-zinc-950 rounded animate-pulse"></div>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-1.5">
+                            <div className="w-10 h-3 bg-zinc-900 rounded animate-pulse"></div>
+                            <div className="w-[100px] h-[28px] bg-zinc-950 rounded-md border border-zinc-900/60 animate-pulse"></div>
+                          </div>
+                        </div>
+
+                        {/* Index price warning box */}
+                        <div className="text-left mb-3 bg-zinc-950/50 p-3 rounded-lg border border-zinc-900/80 animate-pulse">
+                          <div className="text-[9px] font-mono text-zinc-550 uppercase tracking-widest flex items-center gap-1.5 mb-1">
+                            <Icons.Radio className="w-3.5 h-3.5 text-amber-500 animate-pulse" />
+                            Live Price Feed
+                          </div>
+                          <div className="text-[11px] font-bold text-amber-400 font-mono tracking-tight flex items-center gap-1.5">
+                            Reconnecting to price feed...
+                          </div>
+                        </div>
+
+                        <div className="space-y-2 mb-5">
+                          <div className="text-left font-bold text-xs text-zinc-650 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-zinc-800 animate-pulse"></span>
+                            Price feed offline
+                          </div>
+                          <div className="w-24 h-3 bg-zinc-900 rounded animate-pulse"></div>
+                        </div>
+
+                        {/* Disabled buttons */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            disabled
+                            className="flex-1 py-2.5 rounded-xl font-bold font-mono text-xs bg-zinc-950 border border-zinc-900 text-zinc-600 opacity-40 cursor-not-allowed flex items-center justify-center gap-1"
+                          >
+                            Bullish
+                          </button>
+                          <button
+                            type="button"
+                            disabled
+                            className="flex-1 py-2.5 rounded-xl font-bold font-mono text-xs bg-zinc-950 border border-zinc-900 text-zinc-600 opacity-40 cursor-not-allowed flex items-center justify-center gap-1"
+                          >
+                            Bearish
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  }
+
                   // Make sparkline min-max bounded for proper Recharts scaling
                   const sparkData = coin.sparkline.map((s, idx) => ({ idx, value: s.value }));
                   
@@ -663,18 +787,32 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                         </div>
 
                         {/* Custom Candlestick Chart header */}
-                        <div className="text-left mb-4">
-                          <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest bg-zinc-950/80 px-2 py-1 border border-zinc-850 rounded inline-flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                            24-Hour Forensic Candlestick Index
-                          </span>
+                        <div className="text-left mb-4 flex flex-col gap-3">
+                          <div>
+                            <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-widest bg-zinc-950/80 px-2 py-1 border border-zinc-850 rounded inline-flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                              24-Hour Forensic Candlestick Index
+                            </span>
+                          </div>
+
+                          {(selectedCoin.priceError || selectedCoin.price === null) && (
+                            <div className="text-left bg-amber-950/25 border border-amber-900/40 p-4 rounded-xl flex items-center gap-3">
+                              <Icons.AlertTriangle className="w-5 h-5 text-amber-500 animate-pulse shrink-0" />
+                              <div className="space-y-0.5">
+                                <h5 className="text-xs font-bold text-amber-200 font-mono">Live Pricing Temporarily Offline</h5>
+                                <p className="text-[10px] text-zinc-400 leading-normal font-mono">
+                                  Reconnecting to decentralized node indices. Staking and round settlement are temporarily locked until live feed synchronization is established.
+                                </p>
+                              </div>
+                            </div>
+                          )}
                         </div>
 
                         {(() => {
-                          const candlesData = generateCandlesForCoin(selectedCoin.price, selectedCoin.change, selectedCoin.id);
+                          const candlesData = candleCache[selectedCoin.id] || generateCandlesForCoin(selectedCoin.price || 1.0, selectedCoin.change || 0, selectedCoin.id);
                           const candlePrices = candlesData.map((d: any) => d.close);
-                          const maxPrice = candlePrices.length > 0 ? Math.max(...candlePrices) * 1.015 : selectedCoin.price * 1.05;
-                          const minPrice = candlePrices.length > 0 ? Math.min(...candlePrices) * 0.985 : selectedCoin.price * 0.95;
+                          const maxPrice = candlePrices.length > 0 ? Math.max(...candlePrices) * 1.015 : (selectedCoin.price || 1.0) * 1.05;
+                          const minPrice = candlePrices.length > 0 ? Math.min(...candlePrices) * 0.985 : (selectedCoin.price || 1.0) * 0.95;
 
                           const activeHUD = hoveredPoint || (candlesData.length > 0 ? candlesData[candlesData.length - 1] : null);
                           const activeChangePct = activeHUD 
@@ -776,13 +914,15 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                                   </Bar>
 
                                   {/* Live spot price dashed horizontal line */}
-                                  <ReferenceLine
-                                    y={selectedCoin.price}
-                                    stroke={selectedCoin.change >= 0 ? '#26a69a' : '#e8563f'}
-                                    strokeDasharray="3 3"
-                                    strokeWidth={1}
-                                    isFront={true}
-                                  />
+                                  {selectedCoin.price !== null && (
+                                    <ReferenceLine
+                                      y={selectedCoin.price}
+                                      stroke={selectedCoin.change >= 0 ? '#26a69a' : '#e8563f'}
+                                      strokeDasharray="3 3"
+                                      strokeWidth={1}
+                                      isFront={true}
+                                    />
+                                  )}
                                 </ComposedChart>
                               </ResponsiveContainer>
                             </div>
@@ -846,6 +986,15 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                               const isWinning = (isBullish && current >= entry) || (!isBullish && current <= entry);
                               const estimatedPayout = isWinning ? (pendingPrediction.stakeAmount * 2) : 0;
 
+                              const timeLimit = new Date(pendingPrediction.timestamp).getTime() + 24 * 60 * 60 * 1000;
+                              const timeRemainingMs = Math.max(0, timeLimit - Date.now());
+                              const canSettle = timeRemainingMs === 0;
+
+                              const hoursLeft = Math.floor(timeRemainingMs / (60 * 60 * 1000));
+                              const minsLeft = Math.floor((timeRemainingMs % (60 * 60 * 1000)) / (60 * 1000));
+                              const secsLeft = Math.floor((timeRemainingMs % (1000 * 60)) / 1000);
+                              const countdownStr = `${hoursLeft.toString().padStart(2, '0')}:${minsLeft.toString().padStart(2, '0')}:${secsLeft.toString().padStart(2, '0')}`;
+
                               return (
                                 <div className="space-y-4">
                                   <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
@@ -903,16 +1052,32 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                                     </div>
                                   </div>
 
+                                  {!canSettle && (
+                                    <div className="p-3 bg-zinc-950/80 rounded-xl border border-zinc-900 text-center font-mono text-xs">
+                                      <span className="text-zinc-500 block text-[10px] uppercase tracking-wider mb-1">Settlement Window Closes In</span>
+                                      <strong className="text-amber-400 text-sm font-black tracking-widest">{countdownStr}</strong>
+                                    </div>
+                                  )}
+
                                   <button
                                     type="button"
                                     onClick={() => handleSettlePrediction(pendingPrediction.id, selectedCoin.id)}
-                                    disabled={isSettling === pendingPrediction.id}
-                                    className="w-full py-3.5 bg-gradient-to-r from-cyan-500 via-cyan-400 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-black font-extrabold font-mono rounded-xl shadow-[0_0_15px_rgba(0,245,255,0.2)] hover:shadow-[0_0_20px_rgba(0,245,255,0.45)] transition-all cursor-pointer flex items-center justify-center gap-2 select-none"
+                                    disabled={isSettling === pendingPrediction.id || !canSettle}
+                                    className={`w-full py-3.5 font-extrabold font-mono rounded-xl transition-all cursor-pointer flex items-center justify-center gap-2 select-none ${
+                                      canSettle 
+                                        ? 'bg-gradient-to-r from-cyan-500 via-cyan-400 to-indigo-500 hover:from-cyan-400 hover:to-indigo-400 text-black shadow-[0_0_15px_rgba(0,245,255,0.2)] hover:shadow-[0_0_20px_rgba(0,245,255,0.45)]' 
+                                        : 'bg-zinc-900/50 border border-zinc-850 text-zinc-500 cursor-not-allowed'
+                                    }`}
                                   >
                                     {isSettling === pendingPrediction.id ? (
                                       <>
-                                        <Icons.Loader2 className="w-4 h-4 animate-spin text-black" />
+                                        <Icons.Loader2 className="w-4 h-4 animate-spin text-zinc-550" />
                                         COMMITTING SETTLEMENT...
+                                      </>
+                                    ) : !canSettle ? (
+                                      <>
+                                        <Icons.Clock className="w-4 h-4 text-zinc-650" />
+                                        PREDICTION LOCKED (24H WINDOW)
                                       </>
                                     ) : (
                                       <>
@@ -922,7 +1087,7 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                                     )}
                                   </button>
                                   <p className="text-[9px] font-mono text-zinc-500 text-center leading-relaxed">
-                                    * Real-time settlement executes predictions immediately using current live on-chain price indices. Payouts credit back to your persistent balance.
+                                    * Predictions run on a strict 24-hour settlement lock. Once the countdown completes, live on-chain or external API indices determine your final round outcome. No early cancellation allowed.
                                   </p>
                                 </div>
                               );
@@ -1034,7 +1199,7 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                                   <div className="flex items-center gap-3">
                                     <button
                                       type="button"
-                                      disabled={isStaking || isNaN(parseFloat(stakeAmount)) || parseFloat(stakeAmount) <= 0 || parseFloat(stakeAmount) > userBalance || parseFloat(stakeAmount) > 5000}
+                                      disabled={isStaking || isNaN(parseFloat(stakeAmount)) || parseFloat(stakeAmount) <= 0 || parseFloat(stakeAmount) > userBalance || parseFloat(stakeAmount) > 5000 || selectedCoin.priceError || selectedCoin.price === null}
                                       onClick={() => handleStake(selectedCoin.id, 'bullish')}
                                       className="flex-1 py-3 bg-emerald-950/20 hover:bg-emerald-950/30 border border-emerald-900/60 hover:border-emerald-700 text-[#1FD980] disabled:opacity-30 disabled:hover:bg-emerald-950/20 disabled:border-emerald-900/60 disabled:cursor-not-allowed rounded-xl font-bold font-mono text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
                                     >
@@ -1048,7 +1213,7 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
 
                                     <button
                                       type="button"
-                                      disabled={isStaking || isNaN(parseFloat(stakeAmount)) || parseFloat(stakeAmount) <= 0 || parseFloat(stakeAmount) > userBalance || parseFloat(stakeAmount) > 5000}
+                                      disabled={isStaking || isNaN(parseFloat(stakeAmount)) || parseFloat(stakeAmount) <= 0 || parseFloat(stakeAmount) > userBalance || parseFloat(stakeAmount) > 5000 || selectedCoin.priceError || selectedCoin.price === null}
                                       onClick={() => handleStake(selectedCoin.id, 'bearish')}
                                       className="flex-1 py-3 bg-rose-950/20 hover:bg-rose-950/30 border border-[#FF4B82]/30 hover:border-[#FF4B82]/60 text-[#FF4B82] disabled:opacity-30 disabled:hover:bg-rose-950/20 disabled:border-[#FF4B82]/30 disabled:cursor-not-allowed rounded-xl font-bold font-mono text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer select-none"
                                     >
@@ -1134,17 +1299,36 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
                                         )}
                                       </div>
                                     )}
-                                    <div className="text-[9px] text-zinc-500 mt-2 border-t border-zinc-900/40 pt-1.5 flex justify-between">
+                                    <div className="text-[9px] text-zinc-500 mt-2 border-t border-zinc-900/40 pt-1.5 flex justify-between items-center">
                                       <span>Placed: {formattedTime}</span>
-                                      {isPending && (
-                                        <button
-                                          onClick={() => handleSettlePrediction(pred.id, pred.coinId)}
-                                          disabled={isSettling === pred.id}
-                                          className="text-cyan-400 hover:text-white font-extrabold uppercase text-[9px] transition-colors bg-zinc-900 hover:bg-cyan-950 px-2 py-0.5 rounded border border-cyan-900"
-                                        >
-                                          {isSettling === pred.id ? "Settling..." : "Settle Live"}
-                                        </button>
-                                      )}
+                                      {isPending && (() => {
+                                        const tLimit = new Date(pred.timestamp).getTime() + 24 * 60 * 60 * 1000;
+                                        const remainingMs = Math.max(0, tLimit - Date.now());
+                                        const canSettleNow = remainingMs === 0;
+
+                                        if (!canSettleNow) {
+                                          const hLeft = Math.floor(remainingMs / (60 * 60 * 1000));
+                                          const mLeft = Math.floor((remainingMs % (60 * 60 * 1000)) / (60 * 1000));
+                                          const sLeft = Math.floor((remainingMs % (1000 * 60)) / 1000);
+                                          const itemTimer = `${hLeft.toString().padStart(2, '0')}:${mLeft.toString().padStart(2, '0')}:${sLeft.toString().padStart(2, '0')}`;
+                                          return (
+                                            <span className="text-[9px] text-amber-500 font-mono font-bold flex items-center gap-1 bg-amber-950/20 border border-amber-900/40 px-1.5 py-0.5 rounded">
+                                              <Icons.Clock className="w-2.5 h-2.5 text-amber-500/80 animate-pulse" />
+                                              Locked ({itemTimer})
+                                            </span>
+                                          );
+                                        }
+
+                                        return (
+                                          <button
+                                            onClick={() => handleSettlePrediction(pred.id, pred.coinId)}
+                                            disabled={isSettling === pred.id}
+                                            className="text-cyan-400 hover:text-white font-extrabold uppercase text-[9px] transition-colors bg-zinc-900 hover:bg-cyan-950 px-2 py-0.5 rounded border border-cyan-900 cursor-pointer"
+                                          >
+                                            {isSettling === pred.id ? "Settling..." : "Settle Live"}
+                                          </button>
+                                        );
+                                      })()}
                                     </div>
                                   </div>
                                 );

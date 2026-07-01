@@ -428,106 +428,144 @@ const INITIAL_COINS_SERVER = [
 
 let globalTickerCoins = [...INITIAL_COINS_SERVER];
 
+interface LivePrice {
+  price: number | null;
+  change: number | null;
+  timestamp: number;
+  success: boolean;
+}
+
+const lastLivePrices: Record<string, LivePrice> = {
+  surchi: { price: null, change: null, timestamp: 0, success: false },
+  bitcoin: { price: null, change: null, timestamp: 0, success: false },
+  ethereum: { price: null, change: null, timestamp: 0, success: false },
+  binancecoin: { price: null, change: null, timestamp: 0, success: false },
+  solana: { price: null, change: null, timestamp: 0, success: false },
+  'tether-gold': { price: null, change: null, timestamp: 0, success: false }
+};
+
+async function fetchRealPricesDirectly() {
+  const result: Record<string, { price: number; change: number }> = {};
+  
+  // 1. Fetch SURCHI
+  try {
+    const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI', { signal: getTimeoutSignal(4000) });
+    if (sRes.ok) {
+      const data = await sRes.json();
+      if (data && data.pairs && data.pairs.length > 0) {
+        const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
+        if (filtered.length > 0) {
+          filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
+          const bestPair = filtered[0];
+          result['surchi'] = {
+            price: parseFloat(bestPair.priceUsd),
+            change: parseFloat(bestPair.priceChange?.h24 || '0')
+          };
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch SURCHI price directly:", err);
+  }
+
+  // 2. Fetch others in batch
+  const nonSurchiCoins = [
+    { id: 'bitcoin', address: '0x2260fac5e5542a773aa44fbcfedf7c193bc2c599' },
+    { id: 'ethereum', address: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2' },
+    { id: 'binancecoin', address: '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c' },
+    { id: 'solana', address: 'So11111111111111111111111111111111111111112' },
+    { id: 'tether-gold', address: '0x687494c847a916122d793a1d35452b4e897902d5' }
+  ];
+  const addresses = nonSurchiCoins.map(c => c.address).join(',');
+  try {
+    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${addresses}`, { signal: getTimeoutSignal(5000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && Array.isArray(data.pairs)) {
+        const addressToBestPair = new Map<string, any>();
+        data.pairs.forEach((pair: any) => {
+          const addr = (pair.baseToken?.address || "").toLowerCase();
+          if (!addr) return;
+          const existing = addressToBestPair.get(addr);
+          const currentLiq = pair.liquidity?.usd || 0;
+          const existingLiq = existing?.liquidity?.usd || 0;
+          if (!existing || currentLiq > existingLiq) {
+            addressToBestPair.set(addr, pair);
+          }
+        });
+
+        nonSurchiCoins.forEach(coin => {
+          const cleanAddr = coin.address.toLowerCase();
+          const bestPair = addressToBestPair.get(cleanAddr);
+          if (bestPair) {
+            result[coin.id] = {
+              price: parseFloat(bestPair.priceUsd),
+              change: parseFloat(bestPair.priceChange?.h24 || '0')
+            };
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Failed to fetch batch prices directly:", err);
+  }
+
+  // Fallback to CoinGecko only if DexScreener batch failed
+  const missingKeys = nonSurchiCoins.filter(c => !result[c.id]);
+  if (missingKeys.length > 0) {
+    try {
+      const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=bitcoin,ethereum,binancecoin,solana,tether-gold', { signal: getTimeoutSignal(4000) });
+      if (cgRes.ok) {
+        const cgData = await cgRes.json();
+        if (Array.isArray(cgData)) {
+          cgData.forEach((coin: any) => {
+            const mappedId = coin.id === 'tether-gold' ? 'tether-gold' : coin.id;
+            if (!result[mappedId]) {
+              result[mappedId] = {
+                price: parseFloat(coin.current_price),
+                change: parseFloat(coin.price_change_percentage_24h || '0')
+              };
+            }
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("CoinGecko direct price fetch failed:", err);
+    }
+  }
+
+  return result;
+}
+
 async function updateTickerPrices() {
   console.log("[TICKER] Polling latest prices for floating coins in the background...");
   try {
-    // 1. Fetch SURCHI price from DexScreener search
-    let surchiPrice = 0.0215;
-    let surchiChange = 3.42;
-    try {
-      const sRes = await fetch('https://api.dexscreener.com/latest/dex/search?q=SURCHI', { signal: getTimeoutSignal(4000) });
-      if (sRes.ok) {
-        const data = await sRes.json();
-        if (data && data.pairs && data.pairs.length > 0) {
-          const filtered = data.pairs.filter((p: any) => p.baseToken?.symbol?.toUpperCase() === 'SURCHI');
-          if (filtered.length > 0) {
-            filtered.sort((a: any, b: any) => (b.liquidity?.usd || 0) - (a.liquidity?.usd || 0));
-            const bestPair = filtered[0];
-            surchiPrice = parseFloat(bestPair.priceUsd || '0.0215');
-            surchiChange = parseFloat(bestPair.priceChange?.h24 || '3.42');
-            console.log(`[TICKER] Live SURCHI price tracked in background: $${surchiPrice} (${surchiChange}%)`);
-          }
+    const fetched = await fetchRealPricesDirectly();
+    const now = Date.now();
+    for (const key of ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold']) {
+      if (fetched[key]) {
+        lastLivePrices[key] = {
+          price: fetched[key].price,
+          change: fetched[key].change,
+          timestamp: now,
+          success: true
+        };
+        // Also sync to globalTickerCoins so other parts of the system are updated
+        const idx = globalTickerCoins.findIndex(c => c.id === key);
+        if (idx !== -1) {
+          globalTickerCoins[idx].current_price = fetched[key].price;
+          globalTickerCoins[idx].price_change_percentage_24h = fetched[key].change;
         }
-      }
-    } catch (err) {
-      console.warn("[TICKER] Failed to poll SURCHI price in background:", err);
-    }
-
-    // 2. Fetch prices for other coins in batch from DexScreener
-    const nonSurchiAddresses = globalTickerCoins
-      .filter(c => c.id !== 'surchi' && c.address && !c.address.includes('_placeholder'))
-      .map(c => c.address);
-
-    try {
-      const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${nonSurchiAddresses.join(",")}`, { signal: getTimeoutSignal(5000) });
-      if (res.ok) {
-        const data = await res.json();
-        if (data && Array.isArray(data.pairs)) {
-          // Group pairs by base token address
-          const addressToBestPair = new Map<string, any>();
-          data.pairs.forEach((pair: any) => {
-            const addr = (pair.baseToken?.address || "").toLowerCase();
-            if (!addr) return;
-            const existing = addressToBestPair.get(addr);
-            const currentLiq = pair.liquidity?.usd || 0;
-            const existingLiq = existing?.liquidity?.usd || 0;
-            if (!existing || currentLiq > existingLiq) {
-              addressToBestPair.set(addr, pair);
-            }
-          });
-
-          // Update globalTickerCoins map
-          globalTickerCoins = globalTickerCoins.map(coin => {
-            if (coin.id === 'surchi') {
-              return { ...coin, current_price: surchiPrice, price_change_percentage_24h: surchiChange };
-            }
-            const cleanAddr = (coin.address || "").toLowerCase();
-            const bestPair = addressToBestPair.get(cleanAddr);
-            if (bestPair) {
-              return {
-                ...coin,
-                current_price: parseFloat(bestPair.priceUsd) || coin.current_price,
-                price_change_percentage_24h: parseFloat(bestPair.priceChange?.h24) || coin.price_change_percentage_24h
-              };
-            }
-            return coin;
-          });
-          console.log("[TICKER] Background price polling complete. Coins updated with live onchain pairs.");
+      } else {
+        const existing = lastLivePrices[key];
+        if (now - existing.timestamp > 90000) {
+          lastLivePrices[key].success = false;
+          lastLivePrices[key].price = null;
+          lastLivePrices[key].change = null;
         }
-      }
-    } catch (err) {
-      console.warn("[TICKER] DexScreener batch address fetch error, trying CoinGecko fallback...", err);
-      try {
-        const cgRes = await fetch('https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=22&page=1', { signal: getTimeoutSignal(4000) });
-        if (cgRes.ok) {
-          const cgData = await cgRes.json();
-          if (Array.isArray(cgData)) {
-            const cgMap = new Map<string, any>();
-            cgData.forEach((coin: any) => {
-              cgMap.set(coin.id.toLowerCase(), coin);
-            });
-
-            globalTickerCoins = globalTickerCoins.map(coin => {
-              if (coin.id === 'surchi') {
-                return { ...coin, current_price: surchiPrice, price_change_percentage_24h: surchiChange };
-              }
-              const matched = cgMap.get(coin.id.toLowerCase());
-              if (matched) {
-                return {
-                  ...coin,
-                  current_price: matched.current_price || coin.current_price,
-                  price_change_percentage_24h: matched.price_change_percentage_24h || coin.price_change_percentage_24h
-                };
-              }
-              return coin;
-            });
-            console.log("[TICKER] Background price polling complete via CoinGecko fallback.");
-          }
-        }
-      } catch (cgErr) {
-        console.warn("[TICKER] Final CoinGecko fallback failed:", cgErr);
       }
     }
+    console.log("[TICKER] Background price polling complete. Live prices stored.");
   } catch (err) {
     console.error("[TICKER] Critical background price polling error:", err);
   }
@@ -2922,8 +2960,12 @@ const APK_DIR = path.join(UPLOADS_DIR, "apk");
 const CONFIG_FILE = path.join(process.cwd(), "apk-releases.json");
 
 // Ensure upload directories exist
-if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-if (!fs.existsSync(APK_DIR)) fs.mkdirSync(APK_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(UPLOADS_DIR)) fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  if (!fs.existsSync(APK_DIR)) fs.mkdirSync(APK_DIR, { recursive: true });
+} catch (err) {
+  console.warn("Could not create upload directories (read-only filesystem):", err);
+}
 
 // Initialize Default Release Database
 const DEFAULT_RELEASES = [
@@ -2991,11 +3033,17 @@ const DEFAULT_ANALYTICS = {
   logs: []
 };
 
+let memoryReleaseConfig: any = null;
+
 function readReleaseConfig() {
+  if (memoryReleaseConfig) {
+    return memoryReleaseConfig;
+  }
   try {
     if (fs.existsSync(CONFIG_FILE)) {
       const data = fs.readFileSync(CONFIG_FILE, "utf-8");
-      return JSON.parse(data);
+      memoryReleaseConfig = JSON.parse(data);
+      return memoryReleaseConfig;
     }
   } catch (err) {
     console.error("Failed to read apk config:", err);
@@ -3003,15 +3051,21 @@ function readReleaseConfig() {
   
   // Write initial file and return
   const initData = { releases: DEFAULT_RELEASES, analytics: DEFAULT_ANALYTICS };
-  fs.writeFileSync(CONFIG_FILE, JSON.stringify(initData, null, 2), "utf-8");
+  memoryReleaseConfig = initData;
+  try {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(initData, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("Failed to write initial apk config (read-only filesystem):", err);
+  }
   return initData;
 }
 
 function writeReleaseConfig(data: any) {
+  memoryReleaseConfig = data;
   try {
     fs.writeFileSync(CONFIG_FILE, JSON.stringify(data, null, 2), "utf-8");
   } catch (err) {
-    console.error("Failed to write apk config:", err);
+    console.warn("Failed to write apk config (read-only filesystem):", err);
   }
 }
 
@@ -3024,11 +3078,19 @@ app.use("/uploads", express.static(UPLOADS_DIR));
 // Create a mock actual apk file in uploads directory if it doesn't exist so users can actually download a 10KB placeholder .apk!
 const dummyApk1 = path.join(APK_DIR, "surchi-v1.1.0-stable.apk");
 const dummyApk2 = path.join(APK_DIR, "surchi-v1.0.0-stable.apk");
-if (!fs.existsSync(dummyApk1)) {
-  fs.writeFileSync(dummyApk1, "SURCHI_ANDROID_APPLICATION_MOCK_BINARY_v1.1.0_ENTERPRISE_SECURE_BUILD_STABLE");
+try {
+  if (!fs.existsSync(dummyApk1)) {
+    fs.writeFileSync(dummyApk1, "SURCHI_ANDROID_APPLICATION_MOCK_BINARY_v1.1.0_ENTERPRISE_SECURE_BUILD_STABLE");
+  }
+} catch (err) {
+  console.warn("Could not write dummyApk1 (read-only filesystem):", err);
 }
-if (!fs.existsSync(dummyApk2)) {
-  fs.writeFileSync(dummyApk2, "SURCHI_ANDROID_APPLICATION_MOCK_BINARY_v1.0.0_ENTERPRISE_SECURE_BUILD_STABLE");
+try {
+  if (!fs.existsSync(dummyApk2)) {
+    fs.writeFileSync(dummyApk2, "SURCHI_ANDROID_APPLICATION_MOCK_BINARY_v1.0.0_ENTERPRISE_SECURE_BUILD_STABLE");
+  }
+} catch (err) {
+  console.warn("Could not write dummyApk2 (read-only filesystem):", err);
 }
 
 // 1. Get Latest Active Release
@@ -3198,7 +3260,26 @@ app.get("/api/apk/analytics", (req, res) => {
 // ==========================================
 // PREDICTIONS & DISCUSSIONS LAYER FOR SIX COINS
 // ==========================================
-const PREDICTIONS_FILE = path.join(process.cwd(), "predictions-store.json");
+function getSafeFilePath(defaultPath: string): string {
+  try {
+    const dir = path.dirname(defaultPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const testFile = path.join(dir, `.test_write_${Date.now()}`);
+    fs.writeFileSync(testFile, "test", "utf-8");
+    fs.unlinkSync(testFile);
+    return defaultPath;
+  } catch (err) {
+    const filename = path.basename(defaultPath);
+    const tmpPath = path.join("/tmp", filename);
+    console.warn(`[Storage] Path ${defaultPath} is not writable, using /tmp fallback: ${tmpPath}`);
+    return tmpPath;
+  }
+}
+
+const PREDICTIONS_FILE_DEFAULT = path.join(process.cwd(), "predictions-store.json");
+const PREDICTIONS_FILE = getSafeFilePath(PREDICTIONS_FILE_DEFAULT);
 
 const DEFAULT_PREDICTIONS = {
   surchi: {
@@ -3329,20 +3410,33 @@ const DEFAULT_PREDICTIONS = {
   }
 };
 
+let memoryPredictionsStore: any = null;
+
 function readPredictionsStore() {
+  if (memoryPredictionsStore) {
+    return memoryPredictionsStore;
+  }
   try {
     if (fs.existsSync(PREDICTIONS_FILE)) {
       const data = fs.readFileSync(PREDICTIONS_FILE, "utf-8");
-      return JSON.parse(data);
+      memoryPredictionsStore = JSON.parse(data);
+      return memoryPredictionsStore;
     }
   } catch (err) {
     console.error("Failed to read predictions store:", err);
   }
-  fs.writeFileSync(PREDICTIONS_FILE, JSON.stringify(DEFAULT_PREDICTIONS, null, 2), "utf-8");
-  return DEFAULT_PREDICTIONS;
+  
+  memoryPredictionsStore = DEFAULT_PREDICTIONS;
+  try {
+    fs.writeFileSync(PREDICTIONS_FILE, JSON.stringify(DEFAULT_PREDICTIONS, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to write default predictions store to disk:", err);
+  }
+  return memoryPredictionsStore;
 }
 
 function writePredictionsStore(data: any) {
+  memoryPredictionsStore = data;
   try {
     fs.writeFileSync(PREDICTIONS_FILE, JSON.stringify(data, null, 2), "utf-8");
   } catch (err) {
@@ -3353,7 +3447,41 @@ function writePredictionsStore(data: any) {
 // Ensure predictions storage is initialized
 readPredictionsStore();
 
-app.get("/api/predictions", (req, res) => {
+app.get("/api/predictions", async (req, res) => {
+  // If some prices are not loaded yet or are stale, fetch them live!
+  const now = Date.now();
+  const needsFetch = Object.values(lastLivePrices).some(lp => lp.price === null || now - lp.timestamp > 30000);
+  
+  if (needsFetch) {
+    try {
+      const fetched = await fetchRealPricesDirectly();
+      for (const key of ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold']) {
+        if (fetched[key]) {
+          lastLivePrices[key] = {
+            price: fetched[key].price,
+            change: fetched[key].change,
+            timestamp: now,
+            success: true
+          };
+          const idx = globalTickerCoins.findIndex(c => c.id === key);
+          if (idx !== -1) {
+            globalTickerCoins[idx].current_price = fetched[key].price;
+            globalTickerCoins[idx].price_change_percentage_24h = fetched[key].change;
+          }
+        } else {
+          const existing = lastLivePrices[key];
+          if (now - existing.timestamp > 90000) {
+            lastLivePrices[key].success = false;
+            lastLivePrices[key].price = null;
+            lastLivePrices[key].change = null;
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Direct live price fetch error during request:", err);
+    }
+  }
+
   const store = readPredictionsStore();
   
   // Define the six coins in this specific order
@@ -3367,47 +3495,48 @@ app.get("/api/predictions", (req, res) => {
   ];
 
   const result = coinsConfig.map(coin => {
-    // Look up the latest ticker price from the global ticker server-side model
-    const ticker = globalTickerCoins.find(c => c.id === coin.id);
-    const price = ticker ? ticker.current_price : (coin.id === 'tether-gold' ? 2345.50 : 1.0);
-    const change = ticker ? ticker.price_change_percentage_24h : 0.35;
+    const live = lastLivePrices[coin.id];
+    const price = (live && live.success) ? live.price : null;
+    const change = (live && live.success) ? live.change : null;
 
     // Retrieve stats from persistent storage
     const storeKey = coin.id === 'tether-gold' ? 'xaut' : coin.id;
     const stats = store[storeKey] || { bullish: 1000, bearish: 1000, comments: [] };
 
-    // Dynamic deterministic sparkline generator
+    // Sparkline and chartData
     const sparkline: any[] = [];
-    const pointsCount = 12;
-    let basePrice = price / (1 + (change / 100));
-    const priceDelta = price - basePrice;
-    
-    for (let i = 0; i < pointsCount; i++) {
-      const progress = i / (pointsCount - 1);
-      // Generate some realistic jagged wiggle
-      const wave = Math.sin(i * 1.8) * 0.4 + Math.cos(i * 1.1) * 0.2;
-      const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.1 * wave);
-      sparkline.push({
-        value: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
-      });
-    }
-
-    // Dynamic deterministic 24h custom details chart
     const fullChart: any[] = [];
-    const chartPoints = 24;
-    for (let i = 0; i <= chartPoints; i++) {
-      const progress = i / chartPoints;
-      const wave = Math.sin(i * 1.5) * 0.5 + Math.cos(i * 0.8) * 0.25;
-      const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.15 * wave);
-      
-      // Generate a date-time label (e.g. "04:00 AM")
-      const d = new Date(Date.now() - (24 - i) * 3600000);
-      const label = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-      fullChart.push({
-        time: label,
-        price: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
-      });
+    if (price !== null && change !== null) {
+      // Dynamic deterministic sparkline generator
+      const pointsCount = 12;
+      let basePrice = price / (1 + (change / 100));
+      const priceDelta = price - basePrice;
+      
+      for (let i = 0; i < pointsCount; i++) {
+        const progress = i / (pointsCount - 1);
+        const wave = Math.sin(i * 1.8) * 0.4 + Math.cos(i * 1.1) * 0.2;
+        const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.1 * wave);
+        sparkline.push({
+          value: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
+        });
+      }
+
+      // Dynamic deterministic 24h custom details chart
+      const chartPoints = 24;
+      for (let i = 0; i <= chartPoints; i++) {
+        const progress = i / chartPoints;
+        const wave = Math.sin(i * 1.5) * 0.5 + Math.cos(i * 0.8) * 0.25;
+        const stepPrice = basePrice + (priceDelta * progress) + (basePrice * (change / 100) * 0.15 * wave);
+        
+        const d = new Date(Date.now() - (24 - i) * 3600000);
+        const label = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        fullChart.push({
+          time: label,
+          price: parseFloat(stepPrice.toFixed(price > 1000 ? 2 : 5))
+        });
+      }
     }
 
     return {
@@ -3421,7 +3550,8 @@ app.get("/api/predictions", (req, res) => {
       bearishVotes: stats.bearish,
       comments: stats.comments || [],
       sparkline,
-      chartData: fullChart
+      chartData: fullChart,
+      priceError: price === null
     };
   });
 
@@ -3491,28 +3621,176 @@ app.post("/api/predictions/comment", (req, res) => {
 // ==========================================
 // PERSISTENT USER PROFILES & STAKING DATABASE
 // ==========================================
-const USER_PROFILES_FILE = path.join(process.cwd(), "predictions-user-profiles.json");
+const USER_PROFILES_FILE_DEFAULT = path.join(process.cwd(), "predictions-user-profiles.json");
+const USER_PROFILES_FILE = getSafeFilePath(USER_PROFILES_FILE_DEFAULT);
+
+let memoryUserProfilesStore: any = null;
 
 function readUserProfilesStore() {
+  if (memoryUserProfilesStore) {
+    return memoryUserProfilesStore;
+  }
   try {
     if (fs.existsSync(USER_PROFILES_FILE)) {
       const data = fs.readFileSync(USER_PROFILES_FILE, "utf-8");
-      return JSON.parse(data);
+      memoryUserProfilesStore = JSON.parse(data);
+      return memoryUserProfilesStore;
     }
   } catch (err) {
     console.error("Failed to read user profiles store:", err);
   }
-  const initStore = {};
-  fs.writeFileSync(USER_PROFILES_FILE, JSON.stringify(initStore, null, 2), "utf-8");
-  return initStore;
+  
+  memoryUserProfilesStore = {};
+  try {
+    fs.writeFileSync(USER_PROFILES_FILE, JSON.stringify(memoryUserProfilesStore, null, 2), "utf-8");
+  } catch (err) {
+    console.error("Failed to write default user profiles store to disk:", err);
+  }
+  return memoryUserProfilesStore;
 }
 
 function writeUserProfilesStore(data: any) {
+  memoryUserProfilesStore = data;
   try {
     fs.writeFileSync(USER_PROFILES_FILE, JSON.stringify(data, null, 2), "utf-8");
   } catch (err) {
     console.error("Failed to write user profiles store:", err);
   }
+}
+
+function settlePredictionInternal(store: any, userKey: string, prediction: any, currentPrice: number) {
+  const entry = parseFloat(prediction.entryPrice);
+  const current = parseFloat(currentPrice as any);
+  const direction = prediction.directionPredicted;
+  const stake = parseFloat(prediction.stakeAmount);
+
+  let isCorrect = false;
+  if (direction === 'bullish' && current > entry) {
+    isCorrect = true;
+  } else if (direction === 'bearish' && current < entry) {
+    isCorrect = true;
+  } else if (current === entry) {
+    isCorrect = true; // tie resolves as win for user satisfaction
+  }
+
+  let finalPayout = 0;
+  let multiplierApplied = 2;
+
+  if (isCorrect) {
+    finalPayout = stake * 2;
+    store[userKey].balance = parseFloat((store[userKey].balance + finalPayout).toFixed(4));
+  } else {
+    finalPayout = 0;
+    multiplierApplied = 0;
+  }
+
+  prediction.status = "resolved";
+  prediction.resolutionPrice = current;
+  prediction.multiplierApplied = parseFloat(multiplierApplied.toFixed(4));
+  prediction.finalPayout = parseFloat(finalPayout.toFixed(4));
+  prediction.outcome = isCorrect ? "win" : "loss";
+  prediction.resolvedAt = new Date().toISOString();
+
+  // Perfect 6-coin sweep logic
+  if (isCorrect) {
+    const requiredCoins = ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold'];
+    const currentPredTime = new Date(prediction.timestamp).getTime();
+    const twentyFourHours = 24 * 60 * 60 * 1000;
+
+    // Filter candidate predictions:
+    // 1. Current prediction or previously resolved winning predictions
+    // 2. Created within 24h of current prediction's timestamp
+    // 3. sweepBonusApplied has not already been used
+    const candidatePredictions = (store[userKey].history || []).filter((p: any) => {
+      if (p.id !== prediction.id) {
+        if (p.status !== "resolved") return false;
+        if (p.outcome !== "win") return false;
+      }
+      if (p.sweepBonusApplied) return false;
+      
+      const pTime = new Date(p.timestamp).getTime();
+      return Math.abs(currentPredTime - pTime) <= twentyFourHours;
+    });
+
+    const hasAll6 = requiredCoins.every(coinId => {
+      return candidatePredictions.some((p: any) => p.coinId === coinId);
+    });
+
+    if (hasAll6) {
+      const sweepSet: any[] = [];
+      requiredCoins.forEach(coinId => {
+        const found = candidatePredictions.find((p: any) => p.coinId === coinId);
+        if (found) {
+          sweepSet.push(found);
+        }
+      });
+
+      if (sweepSet.length === 6) {
+        const totalStaked = sweepSet.reduce((sum, p) => sum + parseFloat(p.stakeAmount), 0);
+        // Additional sweep bonus payout is 4x total staked (yielding 6x total)
+        const sweepBonusPayout = parseFloat((totalStaked * 4).toFixed(4));
+
+        sweepSet.forEach(p => {
+          const histItem = store[userKey].history.find((h: any) => h.id === p.id);
+          if (histItem) {
+            histItem.sweepBonusApplied = true;
+          }
+        });
+
+        store[userKey].balance = parseFloat((store[userKey].balance + sweepBonusPayout).toFixed(4));
+
+        const sweepHistoryItem = {
+          id: `sweep-${Date.now()}`,
+          coinId: "sweep",
+          stakeAmount: totalStaked,
+          directionPredicted: "bullish",
+          entryPrice: 0,
+          resolutionPrice: 0,
+          timestamp: new Date().toISOString(),
+          status: "resolved",
+          resolvedAt: new Date().toISOString(),
+          multiplierApplied: 6,
+          finalPayout: sweepBonusPayout,
+          outcome: "win",
+          isSweepBonus: true
+        };
+        store[userKey].history.unshift(sweepHistoryItem);
+      }
+    }
+  }
+}
+
+function autoSettleUserPredictions(store: any, userKey: string) {
+  if (!store[userKey] || !store[userKey].history) return false;
+
+  const now = Date.now();
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+  let changed = false;
+
+  store[userKey].history.forEach((prediction: any) => {
+    if (prediction.status === "pending") {
+      const pTime = new Date(prediction.timestamp).getTime();
+      if (now - pTime >= twentyFourHours) {
+        // Find current price of the coin
+        const live = lastLivePrices[prediction.coinId];
+        if (live && live.success && live.price !== null) {
+          settlePredictionInternal(store, userKey, prediction, live.price);
+          changed = true;
+          console.log(`[AUTO-SETTLE] Automatically settled prediction ${prediction.id} for ${userKey} using live price $${live.price}`);
+        } else {
+          // Fallback check: find in globalTickerCoins
+          const ticker = globalTickerCoins.find(c => c.id === prediction.coinId);
+          if (ticker && ticker.current_price) {
+            settlePredictionInternal(store, userKey, prediction, ticker.current_price);
+            changed = true;
+            console.log(`[AUTO-SETTLE] Automatically settled prediction ${prediction.id} for ${userKey} using ticker price $${ticker.current_price}`);
+          }
+        }
+      }
+    }
+  });
+
+  return changed;
 }
 
 // User predictions profile endpoint (faucet included inside registration)
@@ -3531,6 +3809,11 @@ app.get("/api/predictions/user", (req, res) => {
       history: []
     };
     writeUserProfilesStore(store);
+  } else {
+    const changed = autoSettleUserPredictions(store, userKey);
+    if (changed) {
+      writeUserProfilesStore(store);
+    }
   }
   
   res.json({ success: true, user: store[userKey] });
@@ -3629,108 +3912,15 @@ app.post("/api/predictions/settle", (req, res) => {
     return res.status(400).json({ success: false, error: "Prediction is already resolved." });
   }
 
-  const entry = parseFloat(prediction.entryPrice);
-  const current = parseFloat(currentPrice);
-  const direction = prediction.directionPredicted;
-  const stake = parseFloat(prediction.stakeAmount);
-
-  let isCorrect = false;
-  if (direction === 'bullish' && current > entry) {
-    isCorrect = true;
-  } else if (direction === 'bearish' && current < entry) {
-    isCorrect = true;
-  } else if (current === entry) {
-    isCorrect = true; // tie resolves as win for user satisfaction
+  // Enforce 24-hour delay before manual resolution
+  const timeElapsed = Date.now() - new Date(prediction.timestamp).getTime();
+  const twentyFourHours = 24 * 60 * 60 * 1000;
+  if (timeElapsed < twentyFourHours) {
+    return res.status(400).json({ success: false, error: "Predictions can only be settled after the full 24-hour window has completed." });
   }
 
-  let finalPayout = 0;
-  let multiplierApplied = 2;
-
-  if (isCorrect) {
-    finalPayout = stake * 2;
-    store[userKey].balance = parseFloat((store[userKey].balance + finalPayout).toFixed(4));
-  } else {
-    finalPayout = 0;
-    multiplierApplied = 0;
-  }
-
-  prediction.status = "resolved";
-  prediction.resolutionPrice = current;
-  prediction.multiplierApplied = parseFloat(multiplierApplied.toFixed(4));
-  prediction.finalPayout = parseFloat(finalPayout.toFixed(4));
-  prediction.outcome = isCorrect ? "win" : "loss";
-  prediction.resolvedAt = new Date().toISOString();
-
-  // Perfect 6-coin sweep logic
-  if (isCorrect) {
-    const requiredCoins = ['surchi', 'bitcoin', 'ethereum', 'binancecoin', 'solana', 'tether-gold'];
-    const currentPredTime = new Date(prediction.timestamp).getTime();
-    const twentyFourHours = 24 * 60 * 60 * 1000;
-
-    // Filter candidate predictions:
-    // 1. Current prediction or previously resolved winning predictions
-    // 2. Created within 24h of current prediction's timestamp
-    // 3. sweepBonusApplied has not already been used
-    const candidatePredictions = (store[userKey].history || []).filter((p: any) => {
-      if (p.id !== prediction.id) {
-        if (p.status !== "resolved") return false;
-        if (p.outcome !== "win") return false;
-      }
-      if (p.sweepBonusApplied) return false;
-      
-      const pTime = new Date(p.timestamp).getTime();
-      return Math.abs(currentPredTime - pTime) <= twentyFourHours;
-    });
-
-    const hasAll6 = requiredCoins.every(coinId => {
-      return candidatePredictions.some((p: any) => p.coinId === coinId);
-    });
-
-    if (hasAll6) {
-      const sweepSet: any[] = [];
-      requiredCoins.forEach(coinId => {
-        const found = candidatePredictions.find((p: any) => p.coinId === coinId);
-        if (found) {
-          sweepSet.push(found);
-        }
-      });
-
-      if (sweepSet.length === 6) {
-        const totalStaked = sweepSet.reduce((sum, p) => sum + parseFloat(p.stakeAmount), 0);
-        // Total payout should be 6x total staked.
-        // They already received 2x for each of the 6 wins (which equals 2 * totalStaked).
-        // The additional perfect sweep bonus payout is therefore 4x the total staked amount.
-        const sweepBonusPayout = parseFloat((totalStaked * 4).toFixed(4));
-
-        sweepSet.forEach(p => {
-          const histItem = store[userKey].history.find((h: any) => h.id === p.id);
-          if (histItem) {
-            histItem.sweepBonusApplied = true;
-          }
-        });
-
-        store[userKey].balance = parseFloat((store[userKey].balance + sweepBonusPayout).toFixed(4));
-
-        const sweepHistoryItem = {
-          id: `sweep-${Date.now()}`,
-          coinId: "sweep",
-          stakeAmount: totalStaked,
-          directionPredicted: "bullish",
-          entryPrice: 0,
-          resolutionPrice: 0,
-          timestamp: new Date().toISOString(),
-          status: "resolved",
-          resolvedAt: new Date().toISOString(),
-          multiplierApplied: 6,
-          finalPayout: sweepBonusPayout,
-          outcome: "win",
-          isSweepBonus: true
-        };
-        store[userKey].history.unshift(sweepHistoryItem);
-      }
-    }
-  }
-
+  const finalPrice = parseFloat(currentPrice);
+  settlePredictionInternal(store, userKey, prediction, finalPrice);
   writeUserProfilesStore(store);
 
   res.json({
