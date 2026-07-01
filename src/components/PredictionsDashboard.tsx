@@ -195,24 +195,9 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
         throw new Error(data.error || 'Invalid API data payload format');
       }
     } catch (err: any) {
-      console.warn("[PredictionsDashboard] fetchPredictions failed, activating live backup sync:", err);
-      const fallbackData = getFallbackCoins();
-      setCoins(fallbackData);
-      setFallbackMode(true);
-      setError(null); // Clear blocking error state to allow fallback simulation rendering
-
-      // Update candleCache state with fallback values
-      setCandleCache(prev => {
-        const next = { ...prev };
-        fallbackData.forEach((coin: any) => {
-          const coinId = coin.id;
-          const existingCandles = next[coinId];
-          if (!existingCandles || existingCandles.length === 0) {
-            next[coinId] = generateCandlesForCoin(coin.price, coin.change, coin.id);
-          }
-        });
-        return next;
-      });
+      console.error("[PredictionsDashboard] fetchPredictions failed:", err);
+      setError("Live price feed and predictions currently unavailable. Please click below to retry the connection.");
+      setFallbackMode(false);
     } finally {
       setLoading(false);
     }
@@ -292,6 +277,8 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
       const currentCoin = coins.find(c => c.id === coinId);
       const entryPrice = currentCoin ? currentCoin.price : 1.0;
 
+      console.log(`[Staking] Executing stake of ${finalAmount} SURCHI on ${coinId} (${voteType}) at entry price: ${entryPrice}`);
+
       const res = await fetch('/api/predictions/stake', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -303,7 +290,18 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
           entryPrice
         })
       });
-      const data = await res.json();
+      
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        console.error("[Staking] Received non-JSON response from server:", text);
+        throw new Error(`Server returned non-JSON payload: ${text.slice(0, 150)}`);
+      }
+
+      console.log("[Staking] API response received:", data);
+
       if (data.success) {
         setUserBalance(data.user.balance);
         setUserHistory(data.user.history || []);
@@ -312,9 +310,9 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
       } else {
         setStakeError(data.error || "Staking transaction rejected.");
       }
-    } catch (err) {
-      console.error(err);
-      setStakeError("Staking connection failed.");
+    } catch (err: any) {
+      console.error("[Staking] Staking connection exception caught:", err);
+      setStakeError(`Staking connection failed: ${err.message || String(err)}. Verify the API server or connection is active.`);
     } finally {
       setIsStaking(false);
     }
@@ -370,6 +368,8 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
       // Save username preference
       localStorage.setItem('surchi_username', username);
 
+      console.log(`[Comments] Submitting comment for ${coinId} by @${username}: "${newCommentText.trim()}"`);
+
       const res = await fetch('/api/predictions/comment', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -380,13 +380,35 @@ export default function PredictionsDashboard({ onClose, themeMode = 'dark' }: Pr
           avatar: `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`
         })
       });
-      const data = await res.json();
+      
+      const text = await res.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (jsonErr) {
+        console.error("[Comments] Received non-JSON response from server:", text);
+        throw new Error(`Server returned non-JSON payload: ${text.slice(0, 150)}`);
+      }
+
+      console.log("[Comments] Post response received:", data);
+
       if (data.success) {
         setNewCommentText('');
-        // Refresh comments list
+        // Optimistic UI Update: apply newly returned comment list immediately to prevent visual flashing
+        if (data.comments) {
+          setCoins(prevCoins => prevCoins.map(c => {
+            if (c.id === coinId) {
+              return { ...c, comments: data.comments };
+            }
+            return c;
+          }));
+        }
+        // Refresh full predictions lists from backend
         fetchPredictions();
+      } else {
+        console.error("[Comments] API returned success: false:", data.error);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error('Comment post failed:', err);
     }
   };
