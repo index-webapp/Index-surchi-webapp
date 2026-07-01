@@ -949,21 +949,23 @@ async function harvestMainnetTokens(force = false) {
   }
 }
 
-// Start initial background harvest asynchronously on launch
-harvestMainnetTokens(true).catch(err => console.error("Initial harvest launch failed:", err));
+if (!process.env.VERCEL) {
+  // Start initial background harvest asynchronously on launch
+  harvestMainnetTokens(true).catch(err => console.error("Initial harvest launch failed:", err));
 
-// Start initial background ticker updates
-updateTickerPrices().catch(err => console.error("Initial ticker prices update failed:", err));
+  // Start initial background ticker updates
+  updateTickerPrices().catch(err => console.error("Initial ticker prices update failed:", err));
 
-// Set up background recurring harvester every 10 minutes (600,000ms) to ensure continuous data freshness
-setInterval(() => {
-  harvestMainnetTokens().catch(err => console.error("Background continuous harvest failed:", err));
-}, 600000);
+  // Set up background recurring harvester every 10 minutes (600,000ms) to ensure continuous data freshness
+  setInterval(() => {
+    harvestMainnetTokens().catch(err => console.error("Background continuous harvest failed:", err));
+  }, 600000);
 
-// Set up background recurring ticker prices updater every 45 seconds to keep tickers completely updated and fresh
-setInterval(() => {
-  updateTickerPrices().catch(err => console.error("Background ticker prices update failed:", err));
-}, 45000);
+  // Set up background recurring ticker prices updater every 45 seconds to keep tickers completely updated and fresh
+  setInterval(() => {
+    updateTickerPrices().catch(err => console.error("Background ticker prices update failed:", err));
+  }, 45000);
+}
 
 // Health check endpoint for deployment validation and uptime tracking
 app.get("/api/health", (req, res) => {
